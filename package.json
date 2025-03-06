@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/backend/server.js",
-    "dev:backend": "ts-node-dev --respawn --transpile-only src/backend/server.ts",
+    "dev:backend": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/backend/server.ts",
     "dev:frontend": "cd src/frontend && npm start",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "lint": "eslint . --ext .ts,.tsx",
@@ -60,7 +60,9 @@
     "jest": "^29.7.0",
     "nodemon": "^3.1.9",
     "prettier": "^3.5.3",
+    "react-scripts": "^5.0.1",
     "ts-jest": "^29.2.6",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0"
   }
 }

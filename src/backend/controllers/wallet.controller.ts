@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import WalletModel from '../models/wallet.model';
 import { AppError } from '../middleware/error-handler.middleware';
 import { PAGINATION } from '../config';
-import { generatePagination } from '@shared/utils';
+import { generatePagination } from '../../shared/utils';
 
 /**
  * Wallet Controller

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import '../styles/App.css';
 
-// This is a placeholder component that will be replaced with actual API calls
 const WalletList: React.FC = () => {
   const [wallets, setWallets] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -58,10 +58,11 @@ const WalletList: React.FC = () => {
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   required
+                  style={{ marginRight: '10px' }}
                 />
                 <button
                   type="submit"
-                  className="btn btn-primary ml-2"
+                  className="btn btn-primary"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Adding...' : 'Add Wallet'}
@@ -95,12 +96,12 @@ const WalletList: React.FC = () => {
                       <td>{new Date(wallet.createdAt).toLocaleDateString()}</td>
                       <td>{wallet.lastSyncedAt ? new Date(wallet.lastSyncedAt).toLocaleDateString() : 'Never'}</td>
                       <td>
-                        <div className="btn-group">
+                        <div style={{ display: 'flex', gap: '5px' }}>
                           <Link to={`/wallets/${wallet.id}`} className="btn btn-sm btn-primary">
                             View
                           </Link>
                           <button
-                            className="btn btn-sm btn-danger"
+                            className="btn btn-sm btn-secondary"
                             onClick={() => handleDeleteWallet(wallet.id)}
                           >
                             Delete

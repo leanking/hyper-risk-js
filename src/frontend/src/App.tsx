@@ -2,12 +2,11 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import WalletList from './pages/WalletList';
-import WalletDetail from './pages/WalletDetail';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import './styles/App.css';
 
-const App: React.FC = () => {
+function App() {
   return (
     <div className="app">
       <Header />
@@ -15,12 +14,12 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/wallets" element={<WalletList />} />
-          <Route path="/wallets/:id" element={<WalletDetail />} />
+          <Route path="/wallets/:id" element={<div className="container"><h1>Wallet Detail</h1><p>This page is under construction.</p></div>} />
         </Routes>
       </main>
       <Footer />
     </div>
   );
-};
+}
 
-export default App; 
+export default App;

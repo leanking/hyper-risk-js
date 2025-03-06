@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import supabase from '../config/supabase';
 import { DB_TABLES } from '../config';
-import { Wallet } from '@shared/types';
-import { isValidEthereumAddress } from '@shared/utils';
+import { Wallet } from '../../shared/types';
+import { isValidEthereumAddress } from '../../shared/utils';
 import { AppError } from '../middleware/error-handler.middleware';
 
 /**

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import '../styles/App.css';
 import { v4 as uuidv4 } from 'uuid';
@@ -111,16 +111,77 @@ interface HyperLiquidMarketData {
   }[];
 }
 
+// Add interfaces for PNL data
+interface TradeInfo {
+  coin: string;
+  side: string;
+  px: string;
+  sz: string;
+  time: number;
+  hash: string;
+  startPosition: string;
+  dir: string;
+  closedPnl: string;
+  oid: number;
+  crossed: boolean;
+  fee: string;
+  tid: number;
+  feeToken?: string;
+}
+
+interface AssetPnlData {
+  totalRealizedPnl: number;
+  trades: TradeInfo[];
+}
+
+interface HistoricalPnlData {
+  byAsset: Record<string, AssetPnlData>;
+  totalRealizedPnl: number;
+}
+
+interface TradingMetrics {
+  totalRealizedPnl: number;
+  totalFees: number;
+  netPnl: number;
+  totalTrades: number;
+  profitableTrades: number;
+  unprofitableTrades: number;
+  winRate: number;
+}
+
+interface PnlDataWithMetrics {
+  data: HistoricalPnlData;
+  metrics: TradingMetrics;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  timestamp: Date;
+}
+
 const Dashboard: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [positions, setPositions] = useState<Position[]>([]);
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics | null>(null);
-  const [unrealizedPnl, setUnrealizedPnl] = useState<string>('0');
-  const [realizedPnl, setRealizedPnl] = useState<string>('0');
-  const [totalPnl, setTotalPnl] = useState<string>('0');
   const [userState, setUserState] = useState<HyperLiquidUserState | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [unrealizedPnl, setUnrealizedPnl] = useState<string>('0');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [realizedPnl, setRealizedPnl] = useState<string>('0');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [totalPnl, setTotalPnl] = useState<string>('0');
+  // Add state for historical PNL data
+  const [pnlData, setPnlData] = useState<PnlDataWithMetrics | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [pnlLoading, setPnlLoading] = useState<boolean>(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [pnlError, setPnlError] = useState<string | null>(null);
+  // Add state to track if form has been submitted
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,6 +193,7 @@ const Dashboard: React.FC = () => {
     
     setIsLoading(true);
     setError(null);
+    setHasSubmitted(true);
     
     try {
       // Fetch real data from HyperLiquid API
@@ -473,17 +535,101 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Add function to calculate trading metrics
+  const calculateTradingMetrics = useCallback((data: HistoricalPnlData): TradingMetrics => {
+    let totalFees = 0;
+    let totalTrades = 0;
+    let profitableTrades = 0;
+    let unprofitableTrades = 0;
+    let netPnlTotal = 0;
+
+    Object.entries(data.byAsset).forEach(([_, assetData]) => {
+      // Calculate total fees for this asset
+      const assetFees = assetData.trades.reduce((sum, trade) => {
+        return sum + parseFloat(trade.fee || '0');
+      }, 0);
+
+      totalFees += assetFees;
+
+      // Calculate net PNL (realized PNL minus fees)
+      const netPnl = assetData.totalRealizedPnl - assetFees;
+      netPnlTotal += netPnl;
+
+      // Count trades and calculate win/loss metrics
+      assetData.trades.forEach(trade => {
+        const pnl = parseFloat(trade.closedPnl || '0');
+        if (pnl > 0) {
+          profitableTrades++;
+        } else if (pnl < 0) {
+          unprofitableTrades++;
+        }
+      });
+
+      totalTrades += assetData.trades.length;
+    });
+
+    // Calculate trading metrics
+    const winRate = profitableTrades > 0 
+      ? (profitableTrades / (profitableTrades + unprofitableTrades)) * 100 
+      : 0;
+
+    return {
+      totalRealizedPnl: data.totalRealizedPnl,
+      totalFees,
+      netPnl: netPnlTotal,
+      totalTrades,
+      profitableTrades,
+      unprofitableTrades,
+      winRate
+    };
+  }, []);
+
+  // Add function to fetch historical PNL data
+  const fetchHistoricalPnl = useCallback(async () => {
+    if (!walletAddress) return;
+    
+    setPnlLoading(true);
+    setPnlError(null);
+    
+    try {
+      // Fetch historical PNL data from the API
+      const response = await axios.get<ApiResponse<HistoricalPnlData>>(
+        `http://localhost:3001/api/pnl/historical/${walletAddress}`
+      );
+      
+      if (response.data.success && response.data.data) {
+        const metrics = calculateTradingMetrics(response.data.data);
+        setPnlData({
+          data: response.data.data,
+          metrics
+        });
+      } else {
+        setPnlError(response.data.error || 'Failed to fetch historical PNL data');
+      }
+    } catch (err) {
+      console.error('Error fetching historical PNL:', err);
+      setPnlError('Failed to fetch historical PNL data. Please try again.');
+    } finally {
+      setPnlLoading(false);
+    }
+  }, [walletAddress, calculateTradingMetrics]);
+
+  // Add useEffect to fetch historical PNL data when wallet address changes
+  useEffect(() => {
+    if (walletAddress && hasSubmitted) {
+      fetchHistoricalPnl();
+    }
+  }, [walletAddress, hasSubmitted, fetchHistoricalPnl]);
+
   return (
     <div className="container mt-4 mb-5">
-      <h1 className="mb-4">HyperLiquid Risk Dashboard</h1>
-      
       {/* Wallet Address Form */}
       <div className="card mb-4">
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label htmlFor="walletAddress" className="form-label">Ethereum Wallet Address</label>
-              <div className="input-group">
+              <div className="wallet-input-container">
                 <input
                   type="text"
                   className="form-control"
@@ -493,7 +639,7 @@ const Dashboard: React.FC = () => {
                   onChange={(e) => setWalletAddress(e.target.value)}
                   required
                 />
-                <button type="submit" className="btn btn-primary" disabled={isLoading}>
+                <button type="submit" className="btn btn-primary ms-2" disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -504,7 +650,9 @@ const Dashboard: React.FC = () => {
                   )}
                 </button>
               </div>
-              <div className="form-text">Enter an Ethereum wallet address to analyze its HyperLiquid trading activity.</div>
+              <div className="form-text mt-2">
+                Enter an Ethereum wallet address to analyze its HyperLiquid trading activity.
+              </div>
             </div>
           </form>
         </div>
@@ -517,191 +665,8 @@ const Dashboard: React.FC = () => {
         </div>
       )}
       
-      {/* Historical PNL Component */}
-      {walletAddress && !error && (
-        <HistoricalPnl walletAddress={walletAddress} />
-      )}
-      
-      {/* Risk Metrics and Positions */}
-      <div className="dashboard-row">
-        {/* Account Summary Card */}
-        {userState && (
-          <div className="dashboard-card">
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">Account Summary</h2>
-              </div>
-              <div className="card-body">
-                <div className="summary-grid">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Account Value</h5>
-                      <p className="card-text">
-                        {formatCurrency(userState.crossMarginSummary.accountValue)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Margin Usage</h5>
-                      <p className="card-text">
-                        {(() => {
-                          // Check if crossMarginSummary exists
-                          if (!userState.crossMarginSummary) {
-                            return 'N/A';
-                          }
-                          
-                          // Try to use totalMarginUsedRatio if it exists
-                          if (userState.crossMarginSummary.totalMarginUsedRatio) {
-                            const ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
-                            return isNaN(ratio) ? 'N/A' : `${(ratio * 100).toFixed(2)}%`;
-                          }
-                          
-                          // Calculate from totalMarginUsed and accountValue if available
-                          if (userState.crossMarginSummary.totalMarginUsed && 
-                              userState.crossMarginSummary.accountValue) {
-                            const marginUsed = parseFloat(userState.crossMarginSummary.totalMarginUsed);
-                            const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
-                            if (!isNaN(marginUsed) && !isNaN(accountValue) && accountValue > 0) {
-                              return `${((marginUsed / accountValue) * 100).toFixed(2)}%`;
-                            }
-                          }
-                          
-                          return 'N/A';
-                        })()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Maintenance Margin Ratio</h5>
-                      <p className="card-text">
-                        {(() => {
-                          // Check if crossMarginSummary exists
-                          if (!userState.crossMarginSummary) {
-                            return 'N/A';
-                          }
-                          
-                          // Try to use totalMmRatio if it exists
-                          if (userState.crossMarginSummary.totalMmRatio) {
-                            const ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
-                            return isNaN(ratio) ? 'N/A' : `${(ratio * 100).toFixed(2)}%`;
-                          }
-                          
-                          // Calculate from totalMm and accountValue if available
-                          if (userState.crossMarginSummary.totalMm && 
-                              userState.crossMarginSummary.accountValue) {
-                            const totalMm = parseFloat(userState.crossMarginSummary.totalMm);
-                            const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
-                            if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
-                              return `${((totalMm / accountValue) * 100).toFixed(2)}%`;
-                            }
-                          }
-                          
-                          return 'N/A';
-                        })()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PNL Summary Card */}
-        {(unrealizedPnl !== '0' || realizedPnl !== '0') && (
-          <div className="dashboard-card">
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">PNL Summary</h2>
-              </div>
-              <div className="card-body">
-                <div className="summary-grid">
-                  <div className={`card ${parseFloat(unrealizedPnl) >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
-                    <div className="card-body">
-                      <h5 className="card-title">Unrealized PNL</h5>
-                      <p className={`card-text ${parseFloat(unrealizedPnl) >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {formatCurrency(unrealizedPnl)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className={`card ${parseFloat(realizedPnl) >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
-                    <div className="card-body">
-                      <h5 className="card-title">Realized PNL</h5>
-                      <p className={`card-text ${parseFloat(realizedPnl) >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {formatCurrency(realizedPnl)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className={`card ${parseFloat(totalPnl) >= 0 ? 'pnl-positive' : 'pnl-negative'}`}>
-                    <div className="card-body">
-                      <h5 className="card-title">Total PNL</h5>
-                      <p className={`card-text ${parseFloat(totalPnl) >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {formatCurrency(totalPnl)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Risk Metrics Card */}
-        {riskMetrics && (
-          <div className="dashboard-card">
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">Risk Metrics</h2>
-              </div>
-              <div className="card-body">
-                <div className="risk-metrics-grid">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Volatility</h5>
-                      <p className="card-text">{parseFloat(riskMetrics.volatility).toFixed(2)}%</p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Max Drawdown</h5>
-                      <p className="card-text">{parseFloat(riskMetrics.drawdown).toFixed(2)}%</p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Value at Risk (VaR)</h5>
-                      <p className="card-text">{formatCurrency(riskMetrics.valueAtRisk)}</p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Sharpe Ratio</h5>
-                      <p className="card-text">{parseFloat(riskMetrics.sharpeRatio).toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Sortino Ratio</h5>
-                      <p className="card-text">{parseFloat(riskMetrics.sortinoRatio).toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Concentration</h5>
-                      <p className="card-text">{parseFloat(riskMetrics.concentration).toFixed(2)}%</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Current Positions */}
-      {positions.length > 0 && (
+      {/* Current Positions - Moved up as requested */}
+      {hasSubmitted && positions.length > 0 && (
         <div className="card mb-4">
           <div className="card-header">
             <h2 className="card-title">Current Positions</h2>
@@ -790,26 +755,370 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-
+      
       {/* No Data Message */}
-      {!isLoading && walletAddress && !error && positions.length === 0 && (
-        <div className="alert alert-info">
+      {!isLoading && hasSubmitted && walletAddress && !error && positions.length === 0 && (
+        <div className="alert alert-info mb-4">
           No positions found for this wallet. Please check the address and try again.
         </div>
       )}
+      
+      {/* Dashboard Cards Row */}
+      <div className="dashboard-row">
+        {/* Account Summary Card */}
+        {hasSubmitted && userState && (
+          <div className="dashboard-card account-summary">
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Account Summary</h2>
+              </div>
+              <div className="card-body">
+                <div className="summary-container">
+                  {/* Row 1 */}
+                  <div className="summary-row">
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Account Value</h5>
+                          <p className="card-text">
+                            {formatCurrency(userState.crossMarginSummary.accountValue)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Margin Usage</h5>
+                          <p className="card-text" style={{ color: (() => {
+                            // Check if crossMarginSummary exists
+                            if (!userState.crossMarginSummary) {
+                              return '';
+                            }
+                            
+                            // Try to use totalMarginUsedRatio if it exists
+                            if (userState.crossMarginSummary.totalMarginUsedRatio) {
+                              const ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
+                              if (isNaN(ratio)) return '';
+                              return ratio < 0.3 ? '#28a745' : ratio < 0.7 ? '#ffc107' : '#dc3545';
+                            }
+                            
+                            // Calculate from totalMarginUsed and accountValue if available
+                            if (userState.crossMarginSummary.totalMarginUsed && 
+                                userState.crossMarginSummary.accountValue) {
+                              const marginUsed = parseFloat(userState.crossMarginSummary.totalMarginUsed);
+                              const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                              if (!isNaN(marginUsed) && !isNaN(accountValue) && accountValue > 0) {
+                                const ratio = marginUsed / accountValue;
+                                return ratio < 0.3 ? '#28a745' : ratio < 0.7 ? '#ffc107' : '#dc3545';
+                              }
+                            }
+                            
+                            return '';
+                          })() }}>
+                            {(() => {
+                              // Check if crossMarginSummary exists
+                              if (!userState.crossMarginSummary) {
+                                return 'N/A';
+                              }
+                              
+                              // Try to use totalMarginUsedRatio if it exists
+                              if (userState.crossMarginSummary.totalMarginUsedRatio) {
+                                const ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
+                                return isNaN(ratio) ? 'N/A' : `${(ratio * 100).toFixed(2)}%`;
+                              }
+                              
+                              // Calculate from totalMarginUsed and accountValue if available
+                              if (userState.crossMarginSummary.totalMarginUsed && 
+                                  userState.crossMarginSummary.accountValue) {
+                                const marginUsed = parseFloat(userState.crossMarginSummary.totalMarginUsed);
+                                const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                                if (!isNaN(marginUsed) && !isNaN(accountValue) && accountValue > 0) {
+                                  return `${((marginUsed / accountValue) * 100).toFixed(2)}%`;
+                                }
+                              }
+                              
+                              return 'N/A';
+                            })()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Maintenance Margin Ratio</h5>
+                          <p className="card-text" style={{ color: (() => {
+                            // Check if crossMarginSummary exists
+                            if (!userState.crossMarginSummary) {
+                              return '';
+                            }
+                            
+                            // Try to use totalMmRatio if it exists
+                            if (userState.crossMarginSummary.totalMmRatio) {
+                              const ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
+                              if (isNaN(ratio)) return '';
+                              return ratio < 0.1 ? '#28a745' : ratio < 0.2 ? '#ffc107' : '#dc3545';
+                            }
+                            
+                            // Calculate from totalMm and accountValue if available
+                            if (userState.crossMarginSummary.totalMm && 
+                                userState.crossMarginSummary.accountValue) {
+                              const totalMm = parseFloat(userState.crossMarginSummary.totalMm);
+                              const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                              if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
+                                const ratio = totalMm / accountValue;
+                                return ratio < 0.1 ? '#28a745' : ratio < 0.2 ? '#ffc107' : '#dc3545';
+                              }
+                            }
+                            
+                            return '';
+                          })() }}>
+                            {(() => {
+                              // Check if crossMarginSummary exists
+                              if (!userState.crossMarginSummary) {
+                                return 'N/A';
+                              }
+                              
+                              // Try to use totalMmRatio if it exists
+                              if (userState.crossMarginSummary.totalMmRatio) {
+                                const ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
+                                return isNaN(ratio) ? 'N/A' : `${(ratio * 100).toFixed(2)}%`;
+                              }
+                              
+                              // Calculate from totalMm and accountValue if available
+                              if (userState.crossMarginSummary.totalMm && 
+                                  userState.crossMarginSummary.accountValue) {
+                                const totalMm = parseFloat(userState.crossMarginSummary.totalMm);
+                                const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                                if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
+                                  return `${((totalMm / accountValue) * 100).toFixed(2)}%`;
+                                }
+                              }
+                              
+                              return 'N/A';
+                            })()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Row 2 */}
+                  <div className="summary-row">
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Unrealized PNL</h5>
+                          <p className="card-text" style={{ color: parseFloat(unrealizedPnl) >= 0 ? '#28a745' : '#dc3545' }}>
+                            {formatCurrency(unrealizedPnl)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Total Realized PNL</h5>
+                          <p className="card-text" style={{ color: (pnlData?.metrics?.totalRealizedPnl || 0) >= 0 ? '#28a745' : '#dc3545' }}>
+                            {formatCurrency(pnlData?.metrics?.totalRealizedPnl || 0)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Total Fees</h5>
+                          <p className="card-text" style={{ color: '#dc3545' }}>
+                            {formatCurrency(pnlData?.metrics?.totalFees || 0)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Row 3 */}
+                  <div className="summary-row">
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Net PNL</h5>
+                          <p className="card-text" style={{ color: (pnlData?.metrics?.netPnl || 0) >= 0 ? '#28a745' : '#dc3545' }}>
+                            {formatCurrency(pnlData?.metrics?.netPnl || 0)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Win Rate</h5>
+                          <p className="card-text" style={{ color: (pnlData?.metrics?.winRate || 0) >= 50 ? '#28a745' : '#dc3545' }}>
+                            {(pnlData?.metrics?.winRate || 0).toFixed(2)}%
+                          </p>
+                          <small className="text-muted win-rate-details">
+                            {pnlData?.metrics?.profitableTrades || 0} wins / {pnlData?.metrics?.unprofitableTrades || 0} losses
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="summary-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Total PNL</h5>
+                          <p className="card-text" style={{ color: ((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl)) >= 0 ? '#28a745' : '#dc3545' }}>
+                            {formatCurrency((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl))}
+                          </p>
+                          <small className="text-muted total-pnl-details">
+                            Realized + Unrealized
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
+        {/* Risk Metrics Card */}
+        {hasSubmitted && riskMetrics && (
+          <div className="dashboard-card risk-metrics">
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Risk Metrics</h2>
+              </div>
+              <div className="card-body">
+                <div className="risk-metrics-container">
+                  {/* Row 1 */}
+                  <div className="risk-metrics-row">
+                    <div className="risk-metrics-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Volatility</h5>
+                          <p className="card-text" style={{ color: parseFloat(riskMetrics.volatility) < 20 ? '#28a745' : parseFloat(riskMetrics.volatility) < 40 ? '#ffc107' : '#dc3545' }}>
+                            {parseFloat(riskMetrics.volatility).toFixed(2)}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="risk-metrics-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Max Drawdown</h5>
+                          <p className="card-text" style={{ color: parseFloat(riskMetrics.drawdown) < 15 ? '#28a745' : parseFloat(riskMetrics.drawdown) < 30 ? '#ffc107' : '#dc3545' }}>
+                            {parseFloat(riskMetrics.drawdown).toFixed(2)}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Row 2 */}
+                  <div className="risk-metrics-row">
+                    <div className="risk-metrics-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Value at Risk (VaR)</h5>
+                          <p className="card-text" style={{ color: parseFloat(riskMetrics.valueAtRisk) < 500 ? '#28a745' : parseFloat(riskMetrics.valueAtRisk) < 1000 ? '#ffc107' : '#dc3545' }}>
+                            {formatCurrency(riskMetrics.valueAtRisk)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="risk-metrics-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Sharpe Ratio</h5>
+                          <p className="card-text" style={{ color: parseFloat(riskMetrics.sharpeRatio) > 1.5 ? '#28a745' : parseFloat(riskMetrics.sharpeRatio) > 0.5 ? '#ffc107' : '#dc3545' }}>
+                            {parseFloat(riskMetrics.sharpeRatio).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Row 3 */}
+                  <div className="risk-metrics-row">
+                    <div className="risk-metrics-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Sortino Ratio</h5>
+                          <p className="card-text" style={{ color: parseFloat(riskMetrics.sortinoRatio) > 1.5 ? '#28a745' : parseFloat(riskMetrics.sortinoRatio) > 0.5 ? '#ffc107' : '#dc3545' }}>
+                            {parseFloat(riskMetrics.sortinoRatio).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="risk-metrics-card">
+                      <div className="card">
+                        <div className="card-body">
+                          <h5 className="card-title">Concentration</h5>
+                          <p className="card-text" style={{ color: parseFloat(riskMetrics.concentration) < 30 ? '#28a745' : parseFloat(riskMetrics.concentration) < 60 ? '#ffc107' : '#dc3545' }}>
+                            {parseFloat(riskMetrics.concentration).toFixed(2)}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Historical PNL Component - Moved to the bottom */}
+      {hasSubmitted && walletAddress && !error && (
+        <HistoricalPnl walletAddress={walletAddress} />
+      )}
+      
       {/* Initial State Message */}
-      {!isLoading && !walletAddress && !error && (
-        <div className="card">
-          <div className="card-body text-center">
-            <h3>Enter a wallet address to view risk metrics and positions</h3>
-            <p>This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:</p>
-            <ul className="text-start">
-              <li>Unrealized and realized PNL</li>
-              <li>Current open positions</li>
-              <li>Risk metrics for your account</li>
-              <li>Position-specific risk analysis</li>
-            </ul>
+      {!isLoading && !hasSubmitted && !error && (
+        <div className="card welcome-card">
+          <div className="card-body">
+            <h3 className="text-center mb-4">Enter a wallet address to view risk metrics and positions</h3>
+            <p className="text-center mb-4">This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:</p>
+            <div className="features-grid-container">
+              <div className="features-list">
+                <div className="feature-item">
+                  <div className="feature-icon">📊</div>
+                  <div className="feature-content">
+                    <h4 className="feature-title">PNL Tracking</h4>
+                    <div className="feature-text">Unrealized and realized PNL</div>
+                  </div>
+                </div>
+                <div className="feature-item">
+                  <div className="feature-icon">📈</div>
+                  <div className="feature-content">
+                    <h4 className="feature-title">Position Monitoring</h4>
+                    <div className="feature-text">Current open positions</div>
+                  </div>
+                </div>
+                <div className="feature-item">
+                  <div className="feature-icon">⚖️</div>
+                  <div className="feature-content">
+                    <h4 className="feature-title">Risk Assessment</h4>
+                    <div className="feature-text">Risk metrics for your account</div>
+                  </div>
+                </div>
+                <div className="feature-item">
+                  <div className="feature-icon">🔍</div>
+                  <div className="feature-content">
+                    <h4 className="feature-title">Detailed Analysis</h4>
+                    <div className="feature-text">Position-specific risk analysis</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

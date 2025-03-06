@@ -10,8 +10,10 @@
   --link-hover-color: #0a58ca;
   --border-color: rgba(0, 0, 0, 0.1);
   --input-bg: #ffffff;
-  --input-border: #ced4da;
+  --input-border: #e0e0e0;
   --input-text: #212529;
+  --input-focus-border: #0d6efd;
+  --input-focus-shadow: rgba(13, 110, 253, 0.25);
   --btn-primary-bg: #0d6efd;
   --btn-primary-text: #ffffff;
   --btn-secondary-bg: #6c757d;
@@ -37,6 +39,8 @@
   --input-bg: #2d2d2d;
   --input-border: #444444;
   --input-text: #e0e0e0;
+  --input-focus-border: #6ea8fe;
+  --input-focus-shadow: rgba(110, 168, 254, 0.25);
   --btn-primary-bg: #0d6efd;
   --btn-primary-text: #ffffff;
   --btn-secondary-bg: #6c757d;
@@ -60,8 +64,10 @@
   --link-hover-color: #0a58ca;
   --border-color: rgba(0, 0, 0, 0.1);
   --input-bg: #ffffff;
-  --input-border: #ced4da;
+  --input-border: #e0e0e0;
   --input-text: #212529;
+  --input-focus-border: #0d6efd;
+  --input-focus-shadow: rgba(13, 110, 253, 0.25);
   --btn-primary-bg: #0d6efd;
   --btn-primary-text: #ffffff;
   --btn-secondary-bg: #6c757d;

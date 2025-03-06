@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 // Define types for the historical PNL data
@@ -85,9 +85,9 @@ const formatCurrency = (
 };
 
 // Helper function to format percentage
-const formatPercentage = (value: number): string => {
-  return `${value.toFixed(2)}%`;
-};
+// const formatPercentage = (value: number): string => {
+//   return `${value.toFixed(2)}%`;
+// };
 
 const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
   const [pnlData, setPnlData] = useState<HistoricalPnlData | null>(null);
@@ -95,39 +95,12 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
   const [error, setError] = useState<string | null>(null);
   const [summaryData, setSummaryData] = useState<AssetPnlSummary[]>([]);
   const [metrics, setMetrics] = useState<TradingMetrics | null>(null);
-  const [showAssetTable, setShowAssetTable] = useState<boolean>(true);
+  const [showAssetTable, setShowAssetTable] = useState<boolean>(false);
   const [sortColumn, setSortColumn] = useState<SortColumn>('netPnl');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
-  useEffect(() => {
-    const fetchHistoricalPnl = async () => {
-      if (!walletAddress) return;
-      
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const response = await axios.get<ApiResponse<HistoricalPnlData>>(`http://localhost:3001/api/pnl/historical/${walletAddress}`);
-        
-        if (response.data.success && response.data.data) {
-          setPnlData(response.data.data);
-          calculateSummary(response.data.data);
-        } else {
-          setError(response.data.error || 'Failed to fetch historical PNL data');
-        }
-      } catch (err) {
-        console.error('Error fetching historical PNL:', err);
-        setError('Failed to fetch historical PNL data. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    fetchHistoricalPnl();
-  }, [walletAddress]);
-
   // Calculate summary data from the PNL data
-  const calculateSummary = (data: HistoricalPnlData) => {
+  const calculateSummary = useCallback((data: HistoricalPnlData) => {
     const summary: AssetPnlSummary[] = [];
     let netPnlTotal = 0;
     let totalFees = 0;
@@ -186,7 +159,39 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
     // Sort by the default sort column and direction
     const sortedSummary = sortSummaryData(summary, sortColumn, sortDirection);
     setSummaryData(sortedSummary);
-  };
+  }, [sortColumn, sortDirection]);
+
+  const fetchHistoricalPnl = useCallback(async () => {
+    if (!walletAddress) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch historical PNL data from the API
+      const response = await axios.get<ApiResponse<HistoricalPnlData>>(
+        `http://localhost:3001/api/pnl/historical/${walletAddress}`
+      );
+      
+      if (response.data.success && response.data.data) {
+        setPnlData(response.data.data);
+        calculateSummary(response.data.data);
+      } else {
+        setError(response.data.error || 'Failed to fetch historical PNL data');
+      }
+    } catch (err) {
+      console.error('Error fetching historical PNL:', err);
+      setError('Failed to fetch historical PNL data. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [walletAddress, calculateSummary]);
+
+  useEffect(() => {
+    if (walletAddress) {
+      fetchHistoricalPnl();
+    }
+  }, [walletAddress, fetchHistoricalPnl]);
 
   // Function to sort summary data
   const sortSummaryData = (
@@ -284,64 +289,12 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
 
   return (
     <>
-      {/* Trading Performance Summary Card */}
-      <div className="card mb-4">
-        <div className="card-header">
-          <h5 className="card-title">Trading Performance Summary</h5>
-        </div>
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-3 mb-3">
-              <div className="card h-100">
-                <div className="card-body">
-                  <h6 className="card-title">Total Realized PNL</h6>
-                  <p className={`card-text ${metrics.totalRealizedPnl >= 0 ? 'text-success' : 'text-danger'}`}>
-                    {formatCurrency(metrics.totalRealizedPnl)}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 mb-3">
-              <div className="card h-100">
-                <div className="card-body">
-                  <h6 className="card-title">Total Fees</h6>
-                  <p className="card-text text-danger">
-                    {formatCurrency(metrics.totalFees)}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 mb-3">
-              <div className="card h-100">
-                <div className="card-body">
-                  <h6 className="card-title">Net PNL</h6>
-                  <p className={`card-text ${metrics.netPnl >= 0 ? 'text-success' : 'text-danger'}`}>
-                    {formatCurrency(metrics.netPnl)}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 mb-3">
-              <div className="card h-100">
-                <div className="card-body">
-                  <h6 className="card-title">Win Rate</h6>
-                  <p className={`card-text ${metrics.winRate >= 50 ? 'text-success' : 'text-danger'}`}>
-                    {formatPercentage(metrics.winRate)}
-                  </p>
-                  <small className="text-muted">
-                    {metrics.profitableTrades} wins / {metrics.unprofitableTrades} losses
-                  </small>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      {/* Trading Performance Summary Card - Removed as it's now in the Account Summary card */}
+      
       {/* PNL by Asset Card */}
       <div className="card mb-4">
         <div className="card-header d-flex justify-content-between align-items-center">
-          <h5 className="card-title mb-0">PNL by Asset</h5>
+          <h5 className="card-title mb-0">Historical PNL by Asset</h5>
           <button 
             className="btn btn-sm btn-outline-primary" 
             onClick={toggleAssetTable}
@@ -412,7 +365,17 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
                 </table>
               </div>
             )
-          ) : null}
+          ) : (
+            <div className="text-center py-2" style={{ borderTop: '1px solid var(--card-border)', background: 'rgba(0,0,0,0.02)' }}>
+              {summaryData.length > 0 ? (
+                <small className="text-muted">
+                  {summaryData.length} assets traded • Click "Show Details" to view breakdown
+                </small>
+              ) : (
+                <small className="text-muted">No trade history found</small>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>

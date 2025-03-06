@@ -1,0 +1,219 @@
+/* Dashboard Layout */
+.dashboard-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.dashboard-card .card {
+  height: 100%;
+  margin-bottom: 0;
+}
+
+.dashboard-card .card-header {
+  text-align: center;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard-card .card-header .card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  text-align: center;
+  width: 100%;
+}
+
+.dashboard-card .card-body {
+  flex: 1;
+  padding: 1rem;
+}
+
+/* Container Styling - Unified for both summary and risk metrics */
+.summary-container,
+.risk-metrics-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ensure both containers have identical styling */
+.risk-metrics-container {
+  /* Styles already defined in the shared selector above */
+}
+
+.summary-row,
+.risk-metrics-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Card Styling - Unified for both summary and risk metrics */
+.summary-card,
+.risk-metrics-card {
+  flex: 1;
+  min-width: 0;
+}
+
+.summary-card .card,
+.risk-metrics-card .card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 0.125rem 0.25rem var(--shadow-color);
+  height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+}
+
+.summary-card .card-body,
+.risk-metrics-card .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.85rem;
+  text-align: center;
+  min-height: 80px; /* Ensure consistent height */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.summary-card .card-title,
+.risk-metrics-card .card-title {
+  color: var(--text-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  display: block;
+  padding: 0;
+}
+
+.summary-card .card-text,
+.risk-metrics-card .card-text {
+  /* Removed color property to allow text-success, text-warning, and text-danger classes to work */
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  line-height: 1.2;
+  display: block;
+  padding: 0;
+}
+
+/* Small text in cards */
+.summary-card small,
+.risk-metrics-card small {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 5px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  padding: 0;
+}
+
+/* Ensure exact matching between Account Summary and Risk Metrics cards */
+.risk-metrics-card .card {
+  /* Styles already defined in the shared selector above */
+}
+
+/* Ensure consistent padding and sizing */
+.risk-metrics-card .card-body {
+  /* Styles already defined in the shared selector above */
+}
+
+/* Ensure consistent text styling */
+.risk-metrics-card .card-title {
+  /* Styles already defined in the shared selector above */
+}
+
+.risk-metrics-card .card-text {
+  /* Styles already defined in the shared selector above */
+}
+
+/* Responsive Layouts - Unified for both summary and risk metrics */
+@media (max-width: 1200px) {
+  .dashboard-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-row,
+  .risk-metrics-row {
+    flex-wrap: wrap;
+  }
+  
+  .summary-card,
+  .risk-metrics-card {
+    flex: 1 1 calc(50% - 6px);
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 992px) {
+  .summary-row,
+  .risk-metrics-row {
+    flex-direction: column;
+  }
+  
+  .summary-card,
+  .risk-metrics-card {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-container,
+  .risk-metrics-container {
+    gap: 10px;
+  }
+  
+  .summary-row,
+  .risk-metrics-row {
+    gap: 10px;
+  }
+  
+  .summary-card .card-body,
+  .risk-metrics-card .card-body {
+    padding: 0.75rem;
+  }
+  
+  .summary-card .card-title,
+  .risk-metrics-card .card-title {
+    font-size: 0.85rem;
+  }
+  
+  .summary-card .card-text,
+  .risk-metrics-card .card-text {
+    font-size: 1.1rem;
+  }
+}

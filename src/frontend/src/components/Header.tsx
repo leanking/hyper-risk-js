@@ -8,7 +8,7 @@ const Header: React.FC = () => {
     <header className="header">
       <div className="container header-container">
         <Link to="/" className="logo">
-          Hyper-Risk
+          HyperLiquid Risk
         </Link>
         <nav className="d-flex">
           <ul className="nav-menu">

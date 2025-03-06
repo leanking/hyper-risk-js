@@ -91,7 +91,6 @@
   border: 1px solid var(--card-border);
   border-radius: 0.25rem;
   box-shadow: 0 0.125rem 0.25rem var(--shadow-color);
-  margin-bottom: 1.5rem;
 }
 
 .card-header {
@@ -136,9 +135,14 @@
 }
 
 .btn-primary {
-  color: var(--btn-primary-text);
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
   background-color: var(--btn-primary-bg);
   border-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
 }
 
 .btn-primary:hover {
@@ -192,11 +196,28 @@
 }
 
 .text-success {
-  color: #28a745;
+  color: #28a745 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
 }
 
 .text-danger {
-  color: #dc3545;
+  color: #dc3545 !important;
+}
+
+/* Ensure text colors are applied to card text */
+.card-text.text-success {
+  color: #28a745 !important;
+}
+
+.card-text.text-warning {
+  color: #ffc107 !important;
+}
+
+.card-text.text-danger {
+  color: #dc3545 !important;
 }
 
 .mt-2 {
@@ -240,15 +261,24 @@
 .form-control {
   display: block;
   width: 100%;
-  padding: 0.375rem 0.75rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
+  font-weight: 400;
   line-height: 1.5;
-  color: var(--input-text);
+  color: var(--text-color);
   background-color: var(--input-bg);
   background-clip: padding-box;
   border: 1px solid var(--input-border);
   border-radius: 0.25rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  color: var(--text-color);
+  background-color: var(--input-bg);
+  border-color: var(--input-focus-border);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem var(--input-focus-shadow);
 }
 
 .d-flex {
@@ -317,7 +347,7 @@
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
   }
   
   .nav-menu {
@@ -325,204 +355,321 @@
   }
   
   .nav-item {
-    margin-left: 0;
+    margin-left: 1rem;
     margin-right: 1rem;
   }
   
   .footer-container {
     flex-direction: column;
-    text-align: center;
+    align-items: center;
   }
   
   .footer-text {
+    margin-bottom: 1rem;
+  }
+  
+  /* Make wallet address input and button stack on small screens */
+  .wallet-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  #walletAddress {
     margin-bottom: 0.5rem;
   }
   
-  .risk-metrics-grid,
-  .summary-grid {
+  .wallet-input-container .btn-primary {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+  
+  /* Welcome card responsive styling */
+  .welcome-card .card-body {
+    padding: 1.5rem;
+  }
+  
+  .welcome-card h3 {
+    font-size: 1.5rem;
+  }
+  
+  .features-grid-container {
+    padding: 0;
+  }
+  
+  .features-list {
     grid-template-columns: 1fr;
+    grid-gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .feature-item {
+    padding: 1.25rem;
+  }
+  
+  .feature-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+  }
+  
+  .feature-title {
+    font-size: 1rem;
+  }
+  
+  .feature-text {
+    font-size: 0.9rem;
   }
 }
 
-/* Dashboard layout */
-.dashboard-row {
+/* Wallet input container */
+.wallet-input-container {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.dashboard-card {
-  flex: 1;
-  min-width: 300px;
-  display: flex;
-  flex-direction: column;
-}
-
-.dashboard-card .card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.dashboard-card .card-body {
-  flex: 1;
-}
-
-/* Dashboard card content styling */
-.dashboard-card .card-body .card {
-  margin-bottom: 15px;
-  background-color: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 0.25rem;
-  box-shadow: 0 0.125rem 0.25rem var(--shadow-color);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.dashboard-card .card-body .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
-}
-
-.dashboard-card .card-body .card:last-child {
-  margin-bottom: 0;
-}
-
-.dashboard-card .card-body .card .card-body {
-  padding: 1.25rem;
-  text-align: center;
-}
-
-.dashboard-card .card-body .card .card-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--text-color);
-}
-
-.dashboard-card .card-body .card h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-/* Summary grid styling (for Account and PNL summaries) */
-.summary-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 15px;
-  height: 100%;
-}
-
-.summary-grid .card {
-  height: 100%;
-  margin-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 0.25rem;
-  box-shadow: 0 0.125rem 0.25rem var(--shadow-color);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.summary-grid .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
-}
-
-.summary-grid .card-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-wrap: nowrap;
   align-items: center;
-  padding: 1.25rem;
-  text-align: center;
+  gap: 0.5rem;
 }
 
-.summary-grid .card-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--text-color);
-}
-
-.summary-grid .card-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--text-color);
-}
-
-/* PNL card styling */
-.pnl-positive {
-  background-color: rgba(40, 167, 69, 0.05);
-}
-
-.pnl-negative {
-  background-color: rgba(220, 53, 69, 0.05);
-}
-
-/* Make risk metrics cards equal height and better looking */
-.risk-metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  height: 100%;
-}
-
-.risk-metrics-grid .card {
-  height: 100%;
-  margin-bottom: 0;
+.wallet-input-container .btn-primary {
+  align-self: stretch;
   display: flex;
-  flex-direction: column;
-  background-color: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 0.25rem;
-  box-shadow: 0 0.125rem 0.25rem var(--shadow-color);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.risk-metrics-grid .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0.25rem 0.5rem var(--shadow-color);
-}
-
-.risk-metrics-grid .card-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  padding: 1.25rem;
-  text-align: center;
+  justify-content: center;
 }
 
-.risk-metrics-grid .card-title {
+/* Wallet address input styling */
+#walletAddress {
+  font-family: monospace;
+  letter-spacing: 0.5px;
   font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-  color: var(--text-color);
-}
-
-.risk-metrics-grid .card-text {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--text-color);
-}
-
-/* Responsive adjustments */
-@media (max-width: 992px) {
-  .dashboard-card {
-    min-width: 100%;
-    margin-bottom: 15px;
-  }
+  min-width: 0; /* Prevent overflow in flex container */
+  flex: 1; /* Allow input to take available space */
 }
 
 /* Utility Classes */
+.ms-2 {
+  margin-left: 0.5rem !important;
+}
+
 .cursor-pointer {
   cursor: pointer;
+}
+
+/* Welcome card styling */
+.welcome-card {
+  margin-top: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+}
+
+.welcome-card .card-body {
+  padding: 2rem;
+  overflow: visible; /* Allow feature cards to be visible */
+}
+
+.welcome-card h3 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.welcome-card p {
+  color: var(--text-color);
+  opacity: 0.8;
+  max-width: 800px;
+  margin: 0 auto 1.5rem;
+}
+
+.features-grid-container {
+  padding: 0.5rem;
+  margin: 0 auto;
+  max-width: 1000px;
+  width: 100%;
+  overflow: visible; /* Ensure feature cards are visible */
+}
+
+.features-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 2rem;
+  margin-top: 2rem;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  overflow: visible; /* Ensure feature cards are visible */
+}
+
+@media (max-width: 768px) {
+  .features-list {
+    grid-template-columns: 1fr;
+    grid-gap: 1.5rem;
+  }
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.5rem;
+  padding: 1.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.feature-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  font-size: 2rem;
+  margin-right: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.feature-content {
+  flex: 1;
+}
+
+.feature-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-color);
+}
+
+.feature-text {
+  font-size: 0.95rem;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+/* For smaller screens, adjust the layout */
+@media (max-width: 1200px) {
+  /* Dashboard cards */
+  .dashboard-card.account-summary,
+  .dashboard-card.risk-metrics {
+    flex: 1 1 100%;
+    margin-bottom: 20px;
+  }
+  
+  /* Summary and risk metrics cards */
+  .summary-row, 
+  .risk-metrics-row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Summary cards */
+  .summary-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .summary-card {
+    margin-bottom: 15px;
+  }
+  
+  .summary-card:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Risk metrics cards */
+  .risk-metrics-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .risk-metrics-card {
+    margin-bottom: 15px;
+  }
+  
+  .risk-metrics-card:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Improve small text handling in cards */
+.summary-card small,
+.risk-metrics-card small {
+  width: 100%;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  margin-top: 5px;
+  padding: 0 5px;
+}
+
+/* Specific styles for win rate and total pnl details */
+.win-rate-details,
+.total-pnl-details {
+  max-width: 100%;
+  padding: 0 5px;
+  font-size: 0.7rem; /* Smaller font size */
+}
+
+@media (min-width: 1201px) {
+  .summary-row,
+  .risk-metrics-row {
+    flex-wrap: nowrap; /* Prevent wrapping on large screens */
+  }
+  
+  .summary-card,
+  .risk-metrics-card {
+    flex: 1 1 0; /* Equal width cards */
+  }
+}
+
+/* Combined card styling */
+.summary-card .card-title,
+.risk-metrics-card .card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2px;
+}
+
+.summary-card .card-text,
+.risk-metrics-card .card-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  max-width: 100%;
+  padding: 0 2px;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.summary-card .card-body,
+.risk-metrics-card .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0.75rem;
+  text-align: center;
+  overflow: hidden;
+  width: 100%;
 } 

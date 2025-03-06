@@ -7,7 +7,28 @@ import {
   HyperLiquidL2BookData,
   HyperLiquidTrade,
   HyperLiquidUserFillsData,
+  HyperLiquidTradeInfo,
 } from '@shared/types';
+
+/**
+ * Interface for HyperLiquid Clearinghouse State response
+ */
+interface HyperLiquidClearinghouseState {
+  assetPositions?: any[];
+  crossMarginSummary?: {
+    accountValue: string;
+    totalNtlPos: string;
+    totalRawUsd: string;
+    totalMm: string;
+    totalMmRatio?: string;
+    totalMf: string;
+    totalMfRatio?: string;
+    totalMarginUsed: string;
+    totalMarginUsedRatio?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
 
 /**
  * HyperLiquid API Service
@@ -130,14 +151,136 @@ class HyperLiquidApiService {
    */
   async getUserFills(address: string): Promise<HyperLiquidUserFillsData> {
     try {
-      const response = await axios.post(`${this.apiUrl}/info`, {
-        type: 'UserFills',
+      console.log(`Fetching user fills for address: ${address}`);
+      console.log(`API URL: ${this.apiUrl}/info`);
+      
+      // Format the address according to the API documentation:
+      // "Address in 42-character hexadecimal format; e.g. 0x000000000000000000000000000000000000000000."
+      // Remove the '0x' prefix if present
+      const formattedAddress = address.startsWith('0x') ? address.slice(2) : address;
+      
+      // Format the request according to the API documentation
+      // The API expects "type": "userFills" (lowercase 'u')
+      const payload = {
+        type: 'userFills',
+        user: formattedAddress,
+      };
+      
+      console.log(`Request payload:`, JSON.stringify(payload, null, 2));
+      
+      const response = await axios.post(`${this.apiUrl}/info`, payload);
+      
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response data type: ${typeof response.data}`);
+      console.log(`Response data:`, JSON.stringify(response.data, null, 2));
+      
+      // Check if the response data is an array (direct list of fills)
+      if (Array.isArray(response.data)) {
+        console.log(`Response data is an array with ${response.data.length} items`);
+        
+        // Convert the array to the expected format
+        return {
+          is_snapshot: true,
+          user: address,
+          fills: response.data
+        };
+      }
+      
+      // If we get a successful response, return it
+      if (response.status === 200 && response.data) {
+        return response.data as HyperLiquidUserFillsData;
+      }
+      
+      // If we get an empty response or an error, return an empty fills array
+      console.log('Returning empty fills array due to empty response or error');
+      return {
+        is_snapshot: true,
         user: address,
-      });
-      return response.data as HyperLiquidUserFillsData;
+        fills: []
+      };
     } catch (error) {
       console.error(`Error fetching user fills for ${address}:`, error);
-      throw error;
+      if (error instanceof Error) {
+        console.error(`Error message: ${error.message}`);
+      }
+      
+      // Return an empty fills array in case of error
+      return {
+        is_snapshot: true,
+        user: address,
+        fills: []
+      };
+    }
+  }
+
+  /**
+   * Get historical PNL data for a user
+   * @param address The user's Ethereum address
+   * @param startTime Optional start time in milliseconds
+   * @param endTime Optional end time in milliseconds
+   * @returns Historical PNL data grouped by asset
+   */
+  async getHistoricalPnl(
+    address: string,
+    startTime?: number,
+    endTime?: number
+  ): Promise<Record<string, { totalRealizedPnl: number, trades: HyperLiquidTradeInfo[] }>> {
+    try {
+      console.log(`Fetching historical PNL for address: ${address}`);
+      
+      // Get user fills which contain closedPnl information
+      const userFills = await this.getUserFills(address);
+      
+      console.log(`Received user fills:`, JSON.stringify(userFills, null, 2));
+      
+      // If there are no fills, return an empty object
+      if (!userFills.fills || userFills.fills.length === 0) {
+        console.log('No fills found, returning empty PNL data');
+        return {};
+      }
+      
+      // Filter fills by time range if provided
+      let filteredFills = userFills.fills;
+      if (startTime) {
+        console.log(`Filtering fills after ${new Date(startTime).toISOString()}`);
+        filteredFills = filteredFills.filter(fill => fill.time >= startTime);
+      }
+      if (endTime) {
+        console.log(`Filtering fills before ${new Date(endTime).toISOString()}`);
+        filteredFills = filteredFills.filter(fill => fill.time <= endTime);
+      }
+      
+      console.log(`Filtered to ${filteredFills.length} fills`);
+      
+      // Group fills by asset and calculate total realized PNL
+      const pnlByAsset: Record<string, { totalRealizedPnl: number, trades: HyperLiquidTradeInfo[] }> = {};
+      
+      for (const fill of filteredFills) {
+        if (!pnlByAsset[fill.coin]) {
+          pnlByAsset[fill.coin] = {
+            totalRealizedPnl: 0,
+            trades: []
+          };
+        }
+        
+        // Add the closed PNL from this trade
+        // The API returns 'closedPnl' (camelCase) not 'closed_pnl' (snake_case)
+        const closedPnl = parseFloat(fill.closedPnl || '0') || 0;
+        pnlByAsset[fill.coin].totalRealizedPnl += closedPnl;
+        pnlByAsset[fill.coin].trades.push(fill);
+      }
+      
+      console.log(`Calculated PNL by asset:`, JSON.stringify(pnlByAsset, null, 2));
+      
+      return pnlByAsset;
+    } catch (error) {
+      console.error(`Error fetching historical PNL for ${address}:`, error);
+      if (error instanceof Error) {
+        console.error(`Error message: ${error.message}`);
+        console.error(`Error stack: ${error.stack}`);
+      }
+      // Return an empty object in case of error
+      return {};
     }
   }
 
@@ -154,9 +297,12 @@ class HyperLiquidApiService {
     endTime?: number
   ) {
     try {
+      // Format the address according to the API documentation
+      const formattedAddress = address.startsWith('0x') ? address.slice(2) : address;
+      
       const response = await axios.post(`${this.apiUrl}/info`, {
-        type: 'UserFunding',
-        user: address,
+        type: 'userFunding',
+        user: formattedAddress,
         startTime,
         endTime,
       });
@@ -168,15 +314,41 @@ class HyperLiquidApiService {
   }
 
   /**
+   * Get historical orders for a user
+   * @param address The user's Ethereum address
+   * @returns Historical orders
+   */
+  async getHistoricalOrders(address: string) {
+    try {
+      // Format the address according to the API documentation
+      const formattedAddress = address.startsWith('0x') ? address.slice(2) : address;
+      
+      const response = await axios.post(`${this.apiUrl}/info`, {
+        type: 'historicalOrders',
+        user: formattedAddress,
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching historical orders for ${address}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Get user state
    * @param address The user's Ethereum address
    * @returns User state
    */
   async getUserState(address: string) {
     try {
+      console.log(`Fetching user state for address: ${address}`);
+      
+      // Format the address according to the API documentation
+      const formattedAddress = address.startsWith('0x') ? address.slice(2) : address;
+      
       const response = await axios.post(`${this.apiUrl}/info`, {
-        type: 'UserState',
-        user: address,
+        type: 'userState',
+        user: formattedAddress,
       });
       return response.data;
     } catch (error) {
@@ -192,13 +364,68 @@ class HyperLiquidApiService {
    */
   async getOpenOrders(address: string) {
     try {
+      // Format the address according to the API documentation
+      const formattedAddress = address.startsWith('0x') ? address.slice(2) : address;
+      
       const response = await axios.post(`${this.apiUrl}/info`, {
-        type: 'OpenOrders',
-        user: address,
+        type: 'openOrders',
+        user: formattedAddress,
       });
       return response.data;
     } catch (error) {
       console.error(`Error fetching open orders for ${address}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get clearinghouse state for a user
+   * @param address The user's Ethereum address
+   * @returns Clearinghouse state including margin information
+   */
+  async getClearinghouseState(address: string): Promise<HyperLiquidClearinghouseState> {
+    try {
+      // Format the address according to the API documentation
+      const formattedAddress = address.startsWith('0x') ? address.slice(2) : address;
+      
+      const response = await axios.post(`${this.apiUrl}/info`, {
+        type: 'clearinghouseState',
+        user: formattedAddress,
+      });
+      
+      // Log the response for debugging
+      console.log(`Clearinghouse state for ${address}:`, JSON.stringify(response.data, null, 2));
+      
+      // Process the response to ensure margin ratios are calculated if missing
+      const data = response.data as HyperLiquidClearinghouseState;
+      
+      if (data && data.crossMarginSummary) {
+        // Calculate totalMarginUsedRatio if missing but we have the components
+        if (!data.crossMarginSummary.totalMarginUsedRatio && 
+            data.crossMarginSummary.totalMarginUsed && 
+            data.crossMarginSummary.accountValue) {
+          const marginUsed = parseFloat(data.crossMarginSummary.totalMarginUsed);
+          const accountValue = parseFloat(data.crossMarginSummary.accountValue);
+          if (!isNaN(marginUsed) && !isNaN(accountValue) && accountValue > 0) {
+            data.crossMarginSummary.totalMarginUsedRatio = (marginUsed / accountValue).toString();
+          }
+        }
+        
+        // Calculate totalMmRatio if missing but we have the components
+        if (!data.crossMarginSummary.totalMmRatio && 
+            data.crossMarginSummary.totalMm && 
+            data.crossMarginSummary.accountValue) {
+          const totalMm = parseFloat(data.crossMarginSummary.totalMm);
+          const accountValue = parseFloat(data.crossMarginSummary.accountValue);
+          if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
+            data.crossMarginSummary.totalMmRatio = (totalMm / accountValue).toString();
+          }
+        }
+      }
+      
+      return data;
+    } catch (error) {
+      console.error(`Error fetching clearinghouse state for ${address}:`, error);
       throw error;
     }
   }

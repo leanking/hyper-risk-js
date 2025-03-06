@@ -60,6 +60,9 @@ class TransactionService {
         type,
         status: TransactionStatus.CONFIRMED,
         fee: fill.fee,
+        metadata: {
+          crossed: fill.crossed,
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
       };

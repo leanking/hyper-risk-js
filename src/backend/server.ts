@@ -8,7 +8,7 @@ import { rateLimitMiddleware } from './middleware/rate-limit.middleware';
 import walletRoutes from './routes/wallet.routes';
 // import transactionRoutes from './routes/transaction.routes';
 // import positionRoutes from './routes/position.routes';
-// import pnlRoutes from './routes/pnl.routes';
+import pnlRoutes from './routes/pnl.routes';
 // import riskMetricsRoutes from './routes/risk-metrics.routes';
 
 // Create Express app
@@ -39,7 +39,7 @@ app.get('/api/health', (req, res) => {
 app.use(API_ENDPOINTS.wallets, walletRoutes);
 // app.use(API_ENDPOINTS.transactions, transactionRoutes);
 // app.use(API_ENDPOINTS.positions, positionRoutes);
-// app.use(API_ENDPOINTS.pnl, pnlRoutes);
+app.use(API_ENDPOINTS.pnl, pnlRoutes);
 // app.use(API_ENDPOINTS.riskMetrics, riskMetricsRoutes);
 
 // 404 handler

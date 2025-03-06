@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle';
 import '../styles/App.css';
 
 const Header: React.FC = () => {
@@ -7,9 +8,9 @@ const Header: React.FC = () => {
     <header className="header">
       <div className="container header-container">
         <Link to="/" className="logo">
-          Wallet PNL Tracker
+          Hyper-Risk
         </Link>
-        <nav>
+        <nav className="d-flex">
           <ul className="nav-menu">
             <li className="nav-item">
               <NavLink 
@@ -20,15 +21,8 @@ const Header: React.FC = () => {
                 Dashboard
               </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink 
-                to="/wallets" 
-                className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
-              >
-                Wallets
-              </NavLink>
-            </li>
           </ul>
+          <ThemeToggle />
         </nav>
       </div>
     </header>

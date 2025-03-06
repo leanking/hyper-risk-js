@@ -45,4 +45,10 @@ router.delete('/:id', WalletController.delete);
  */
 router.post('/:id/sync', WalletController.sync);
 
+/**
+ * @route POST /api/wallets/analyze
+ * @desc Analyze a wallet by address (positions, risk metrics, PNL)
+ */
+router.post('/analyze', WalletController.analyze);
+
 export default router; 

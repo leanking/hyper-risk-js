@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import hyperLiquidApi from './hyperliquid-api.service';
-import { Position, PositionSide, PositionStatus, Transaction, TransactionType } from '@shared/types';
+import { Position, PositionSide, PositionStatus, Transaction, TransactionType, MarginType } from '@shared/types';
 import { calculatePnl } from '@shared/utils';
 
 /**
@@ -74,6 +74,11 @@ class PositionService {
       const quantity = parseFloat(transaction.value);
       const price = transaction.fee ? parseFloat(transaction.fee) / quantity : 0;
       
+      // Determine margin type from transaction metadata if available
+      // Default to cross margin if not specified
+      const marginType = transaction.metadata?.crossed === false ? 
+        MarginType.ISOLATED : MarginType.CROSS;
+      
       if (!currentPosition) {
         // Create a new position
         currentPosition = {
@@ -85,6 +90,7 @@ class PositionService {
           quantity: quantity.toString(),
           side: isBuy ? PositionSide.LONG : PositionSide.SHORT,
           status: PositionStatus.OPEN,
+          marginType,
           openedAt: transaction.timestamp,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -110,6 +116,11 @@ class PositionService {
         } else {
           // Position is still open
           currentPosition.quantity = newQuantity.toString();
+          // Update margin type if it has changed
+          if (transaction.metadata?.crossed !== undefined) {
+            currentPosition.marginType = transaction.metadata.crossed === false ? 
+              MarginType.ISOLATED : MarginType.CROSS;
+          }
           currentPosition.updatedAt = new Date();
         }
       }

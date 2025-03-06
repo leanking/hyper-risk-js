@@ -3,6 +3,12 @@ import WalletModel from '../models/wallet.model';
 import { AppError } from '../middleware/error-handler.middleware';
 import { PAGINATION } from '../config';
 import { generatePagination } from '../../shared/utils';
+import { v4 as uuidv4 } from 'uuid';
+import PositionService from '../services/position.service';
+import RiskMetricsService from '../services/risk-metrics.service';
+import TransactionService from '../services/transaction.service';
+import hyperLiquidApi from '../services/hyperliquid-api.service';
+import { Position } from '../../shared/types';
 
 /**
  * Wallet Controller
@@ -177,6 +183,134 @@ export default class WalletController {
       res.status(200).json({
         success: true,
         data: updatedWallet,
+        timestamp: new Date(),
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Analyze a wallet by address
+   * @route POST /api/wallets/analyze
+   */
+  static async analyze(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { address } = req.body;
+
+      if (!address) {
+        throw new AppError('Wallet address is required', 400);
+      }
+
+      // For demo purposes, generate mock data
+      const walletId = uuidv4();
+      
+      // Mock positions
+      const positions = [
+        {
+          id: uuidv4(),
+          walletId,
+          asset: 'BTC',
+          entryPrice: '30000',
+          currentPrice: '31500',
+          quantity: '0.5',
+          side: 'long',
+          status: 'open',
+          openedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+          unrealizedPnl: '750',
+          realizedPnl: '0',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: uuidv4(),
+          walletId,
+          asset: 'ETH',
+          entryPrice: '2000',
+          currentPrice: '1900',
+          quantity: '5',
+          side: 'long',
+          status: 'open',
+          openedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+          unrealizedPnl: '-500',
+          realizedPnl: '0',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: uuidv4(),
+          walletId,
+          asset: 'SOL',
+          entryPrice: '100',
+          currentPrice: '120',
+          quantity: '20',
+          side: 'long',
+          status: 'open',
+          openedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+          unrealizedPnl: '400',
+          realizedPnl: '0',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+      
+      // Mock risk metrics
+      const riskMetrics = {
+        id: uuidv4(),
+        walletId,
+        volatility: '15.5',
+        drawdown: '8.2',
+        valueAtRisk: '1200',
+        sharpeRatio: '1.8',
+        sortinoRatio: '2.1',
+        concentration: '65',
+        timestamp: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      // Mock PNL records
+      const pnlRecords = positions.map(position => {
+        return [
+          // Unrealized PNL
+          {
+            id: `${position.id}-unrealized`,
+            walletId,
+            positionId: position.id,
+            asset: position.asset,
+            amount: position.unrealizedPnl,
+            type: 'unrealized',
+            timestamp: new Date(),
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          // Realized PNL if available
+          ...(position.realizedPnl && position.realizedPnl !== '0' ? [{
+            id: `${position.id}-realized`,
+            walletId,
+            positionId: position.id,
+            asset: position.asset,
+            amount: position.realizedPnl,
+            type: 'realized',
+            timestamp: new Date(),
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }] : [])
+        ];
+      }).flat();
+
+      res.status(200).json({
+        success: true,
+        data: {
+          positions,
+          riskMetrics,
+          pnl: pnlRecords,
+          userState: {
+            address,
+            totalValue: '35000',
+            marginUsage: '45%'
+          }
+        },
         timestamp: new Date(),
       });
     } catch (error) {

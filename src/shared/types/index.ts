@@ -22,6 +22,10 @@ export interface Transaction {
   type: TransactionType;
   status: TransactionStatus;
   fee?: string;
+  metadata?: {
+    crossed?: boolean;
+    [key: string]: any;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +54,7 @@ export interface Position {
   quantity: string;
   side: PositionSide;
   status: PositionStatus;
+  marginType: MarginType;
   openedAt: Date;
   closedAt?: Date;
   realizedPnl?: string;
@@ -66,6 +71,11 @@ export enum PositionSide {
 export enum PositionStatus {
   OPEN = 'open',
   CLOSED = 'closed',
+}
+
+export enum MarginType {
+  CROSS = 'cross',
+  ISOLATED = 'isolated',
 }
 
 // PNL Types
@@ -154,14 +164,15 @@ export interface HyperLiquidTradeInfo {
   sz: string;
   time: number;
   hash: string;
-  start_position: string;
+  startPosition: string;
   dir: string;
-  closed_pnl: string;
+  closedPnl: string;
   oid: number;
   cloid?: string;
   crossed: boolean;
   fee: string;
   tid: number;
+  feeToken?: string;
 }
 
 export interface HyperLiquidUserFillsData {

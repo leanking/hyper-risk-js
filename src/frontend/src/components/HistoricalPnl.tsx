@@ -49,6 +49,12 @@ interface TradingMetrics {
   winRate: number;
 }
 
+// Type for sort column
+type SortColumn = 'asset' | 'totalRealizedPnl' | 'totalFees' | 'netPnl' | 'tradeCount';
+
+// Type for sort direction
+type SortDirection = 'asc' | 'desc';
+
 interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -89,6 +95,9 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
   const [error, setError] = useState<string | null>(null);
   const [summaryData, setSummaryData] = useState<AssetPnlSummary[]>([]);
   const [metrics, setMetrics] = useState<TradingMetrics | null>(null);
+  const [showAssetTable, setShowAssetTable] = useState<boolean>(true);
+  const [sortColumn, setSortColumn] = useState<SortColumn>('netPnl');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
     const fetchHistoricalPnl = async () => {
@@ -174,9 +183,76 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
       winRate
     });
 
-    // Sort by net PNL (highest to lowest)
-    summary.sort((a, b) => b.netPnl - a.netPnl);
-    setSummaryData(summary);
+    // Sort by the default sort column and direction
+    const sortedSummary = sortSummaryData(summary, sortColumn, sortDirection);
+    setSummaryData(sortedSummary);
+  };
+
+  // Function to sort summary data
+  const sortSummaryData = (
+    data: AssetPnlSummary[], 
+    column: SortColumn, 
+    direction: SortDirection
+  ): AssetPnlSummary[] => {
+    return [...data].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (column) {
+        case 'asset':
+          comparison = a.asset.localeCompare(b.asset);
+          break;
+        case 'totalRealizedPnl':
+          comparison = a.totalRealizedPnl - b.totalRealizedPnl;
+          break;
+        case 'totalFees':
+          comparison = a.totalFees - b.totalFees;
+          break;
+        case 'netPnl':
+          comparison = a.netPnl - b.netPnl;
+          break;
+        case 'tradeCount':
+          comparison = a.tradeCount - b.tradeCount;
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return direction === 'asc' ? comparison : -comparison;
+    });
+  };
+
+  // Handle column header click for sorting
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      // Toggle direction if clicking the same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new column and default to descending
+      setSortColumn(column);
+      setSortDirection('desc');
+    }
+    
+    // Re-sort the data
+    const sortedData = sortSummaryData(summaryData, column, 
+      sortColumn === column && sortDirection === 'asc' ? 'desc' : 'asc'
+    );
+    setSummaryData(sortedData);
+  };
+
+  // Toggle asset table visibility
+  const toggleAssetTable = () => {
+    setShowAssetTable(!showAssetTable);
+  };
+
+  // Render sort indicator
+  const renderSortIndicator = (column: SortColumn) => {
+    if (sortColumn !== column) return null;
+    
+    return (
+      <span className="ms-1">
+        {sortDirection === 'asc' ? '▲' : '▼'}
+      </span>
+    );
   };
 
   // Loading and error states
@@ -264,46 +340,79 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
 
       {/* PNL by Asset Card */}
       <div className="card mb-4">
-        <div className="card-header">
-          <h5 className="card-title">PNL by Asset</h5>
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <h5 className="card-title mb-0">PNL by Asset</h5>
+          <button 
+            className="btn btn-sm btn-outline-primary" 
+            onClick={toggleAssetTable}
+          >
+            {showAssetTable ? 'Hide Details' : 'Show Details'}
+          </button>
         </div>
-        <div className="card-body">
-          {summaryData.length === 0 ? (
-            <div className="alert alert-info">
-              No trade history found for this wallet.
-            </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-striped table-hover">
-                <thead>
-                  <tr>
-                    <th>Asset</th>
-                    <th>Realized PNL</th>
-                    <th>Fees</th>
-                    <th>Net PNL</th>
-                    <th>Trades</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summaryData.map((summary) => (
-                    <tr key={summary.asset}>
-                      <td><strong>{summary.asset}</strong></td>
-                      <td className={summary.totalRealizedPnl >= 0 ? 'text-success' : 'text-danger'}>
-                        {formatCurrency(summary.totalRealizedPnl)}
-                      </td>
-                      <td className="text-danger">
-                        {formatCurrency(summary.totalFees)}
-                      </td>
-                      <td className={summary.netPnl >= 0 ? 'text-success' : 'text-danger'}>
-                        <strong>{formatCurrency(summary.netPnl)}</strong>
-                      </td>
-                      <td>{summary.tradeCount}</td>
+        <div className={`card-body ${showAssetTable ? '' : 'p-0'}`}>
+          {showAssetTable ? (
+            summaryData.length === 0 ? (
+              <div className="alert alert-info">
+                No trade history found for this wallet.
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-striped table-hover">
+                  <thead>
+                    <tr>
+                      <th 
+                        className="cursor-pointer" 
+                        onClick={() => handleSort('asset')}
+                      >
+                        Asset {renderSortIndicator('asset')}
+                      </th>
+                      <th 
+                        className="cursor-pointer" 
+                        onClick={() => handleSort('totalRealizedPnl')}
+                      >
+                        Realized PNL {renderSortIndicator('totalRealizedPnl')}
+                      </th>
+                      <th 
+                        className="cursor-pointer" 
+                        onClick={() => handleSort('totalFees')}
+                      >
+                        Fees {renderSortIndicator('totalFees')}
+                      </th>
+                      <th 
+                        className="cursor-pointer" 
+                        onClick={() => handleSort('netPnl')}
+                      >
+                        Net PNL {renderSortIndicator('netPnl')}
+                      </th>
+                      <th 
+                        className="cursor-pointer" 
+                        onClick={() => handleSort('tradeCount')}
+                      >
+                        Trades {renderSortIndicator('tradeCount')}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {summaryData.map((summary) => (
+                      <tr key={summary.asset}>
+                        <td><strong>{summary.asset}</strong></td>
+                        <td className={summary.totalRealizedPnl >= 0 ? 'text-success' : 'text-danger'}>
+                          {formatCurrency(summary.totalRealizedPnl)}
+                        </td>
+                        <td className="text-danger">
+                          {formatCurrency(summary.totalFees)}
+                        </td>
+                        <td className={summary.netPnl >= 0 ? 'text-success' : 'text-danger'}>
+                          <strong>{formatCurrency(summary.netPnl)}</strong>
+                        </td>
+                        <td>{summary.tradeCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )
+          ) : null}
         </div>
       </div>
     </>

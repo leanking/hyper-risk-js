@@ -250,13 +250,25 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
     if (sortColumn !== column) return null;
     
     return (
-      <span className="ml-1 inline-block">
+      <span className="inline-flex items-center justify-center">
         {sortDirection === 'asc' ? (
-          <svg className="w-3 h-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg 
+            className="w-4 h-4 text-purple-500 dark:text-purple-400" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
           </svg>
         ) : (
-          <svg className="w-3 h-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <svg 
+            className="w-4 h-4 text-purple-500 dark:text-purple-400" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         )}
@@ -292,14 +304,35 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 mb-6">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-        <h5 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Historical PNL by Asset</h5>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 mb-6 overflow-hidden transition-all duration-200 hover:shadow-lg">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-white dark:from-gray-800 dark:to-gray-750 flex justify-between items-center">
+        <h5 className="text-xl font-semibold text-gray-900 dark:text-white m-0 flex items-center">
+          <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-lg mr-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+            </svg>
+          </span>
+          Historical PNL by Asset
+        </h5>
         <button 
-          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md"
+          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md transition-colors duration-150 flex items-center"
           onClick={() => setShowAssetTable(!showAssetTable)}
         >
-          {showAssetTable ? 'Hide Details' : 'Show Details'}
+          {showAssetTable ? (
+            <>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Hide Details
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+              </svg>
+              Show Details
+            </>
+          )}
         </button>
       </div>
       <div className={`${showAssetTable ? 'p-4' : 'p-0'}`}>
@@ -316,54 +349,113 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                  <tr>
+                <thead>
+                  <tr className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      className="group px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400"
                       onClick={() => handleSort('asset')}
                     >
-                      Asset {renderSortIndicator('asset')}
+                      <div className="flex items-center">
+                        <span>Asset</span>
+                        <div className="ml-1">{renderSortIndicator('asset')}</div>
+                      </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400"
                       onClick={() => handleSort('totalRealizedPnl')}
                     >
-                      Realized PNL {renderSortIndicator('totalRealizedPnl')}
+                      <div className="flex items-center justify-end">
+                        <span>Realized PNL</span>
+                        <div className="ml-1">{renderSortIndicator('totalRealizedPnl')}</div>
+                      </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400"
                       onClick={() => handleSort('totalFees')}
                     >
-                      Fees {renderSortIndicator('totalFees')}
+                      <div className="flex items-center justify-end">
+                        <span>Fees</span>
+                        <div className="ml-1">{renderSortIndicator('totalFees')}</div>
+                      </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400"
                       onClick={() => handleSort('netPnl')}
                     >
-                      Net PNL {renderSortIndicator('netPnl')}
+                      <div className="flex items-center justify-end">
+                        <span>Net PNL</span>
+                        <div className="ml-1">{renderSortIndicator('netPnl')}</div>
+                      </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400"
                       onClick={() => handleSort('tradeCount')}
                     >
-                      Trades {renderSortIndicator('tradeCount')}
+                      <div className="flex items-center justify-end">
+                        <span>Trades</span>
+                        <div className="ml-1">{renderSortIndicator('tradeCount')}</div>
+                      </div>
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
                   {summaryData.map((summary) => (
-                    <tr key={summary.asset} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{summary.asset}</td>
+                    <tr key={summary.asset} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mr-3 font-medium">
+                            {summary.asset.substring(0, 1)}
+                          </div>
+                          <div className="font-medium text-gray-900 dark:text-white">{summary.asset}</div>
+                        </div>
+                      </td>
                       <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${summary.totalRealizedPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {formatCurrency(summary.totalRealizedPnl)}
+                        <div className="flex items-center justify-end">
+                          <span>{formatCurrency(summary.totalRealizedPnl)}</span>
+                          <span className="ml-1.5">
+                            {summary.totalRealizedPnl >= 0 ? (
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </span>
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-red-600 dark:text-red-400">
-                        {formatCurrency(summary.totalFees)}
+                        <div className="flex items-center justify-end">
+                          <span>{formatCurrency(summary.totalFees)}</span>
+                          <span className="ml-1.5">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                              <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </span>
+                        </div>
                       </td>
                       <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold text-right ${summary.netPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {formatCurrency(summary.netPnl)}
+                        <div className="flex items-center justify-end">
+                          <span>{formatCurrency(summary.netPnl)}</span>
+                          <span className="ml-1.5">
+                            {summary.netPnl >= 0 ? (
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                              </svg>
+                            ) : (
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900 dark:text-white">{summary.tradeCount}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                        <div className="flex items-center justify-end">
+                          <span className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-2.5 py-1 rounded-full">{summary.tradeCount}</span>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -324,9 +324,16 @@ interface TableCardProps {
 
 const TableCard: React.FC<TableCardProps> = ({ title, children, className = '' }) => {
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-200 hover:shadow-xl ${className}`}>
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">{title}</h2>
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-200 hover:shadow-lg ${className}`}>
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-purple-50 to-white dark:from-gray-800 dark:to-gray-750">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0 flex items-center">
+          <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-1.5 rounded-lg mr-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clipRule="evenodd" />
+            </svg>
+          </span>
+          {title}
+        </h2>
       </div>
       <div className="overflow-hidden">
         {children}
@@ -958,30 +965,24 @@ const Dashboard: React.FC = () => {
     if (positionSortColumn !== column) return null;
     
     return (
-      <span className="ml-1 inline-block">
+      <span className="inline-flex items-center justify-center">
         {positionSortDirection === 'asc' ? (
           <svg 
-            className="w-3 h-3 text-gray-500 dark:text-gray-400 flex-shrink-0" 
-            width="12" 
-            height="12" 
+            className="w-4 h-4 text-purple-500 dark:text-purple-400" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24" 
             xmlns="http://www.w3.org/2000/svg"
-            style={{ maxWidth: '12px', maxHeight: '12px', overflow: 'hidden' }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
           </svg>
         ) : (
           <svg 
-            className="w-3 h-3 text-gray-500 dark:text-gray-400 flex-shrink-0" 
-            width="12" 
-            height="12" 
+            className="w-4 h-4 text-purple-500 dark:text-purple-400" 
             fill="none" 
             stroke="currentColor" 
             viewBox="0 0 24 24" 
             xmlns="http://www.w3.org/2000/svg"
-            style={{ maxWidth: '12px', maxHeight: '12px', overflow: 'hidden' }}
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -1118,38 +1119,63 @@ const Dashboard: React.FC = () => {
           <TableCard title="Current Positions">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('asset')}>
-                      Asset {renderSortIndicator('asset')}
+                <thead>
+                  <tr className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
+                    <th className="group px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('asset')}>
+                      <div className="flex items-center">
+                        <span>Asset</span>
+                        <div className="ml-1">{renderSortIndicator('asset')}</div>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('side')}>
-                      Side {renderSortIndicator('side')}
+                    <th className="group px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('side')}>
+                      <div className="flex items-center">
+                        <span>Side</span>
+                        <div className="ml-1">{renderSortIndicator('side')}</div>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Margin Type
+                    <th className="group px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <div className="flex items-center">
+                        <span>Margin Type</span>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('quantity')}>
-                      Quantity {renderSortIndicator('quantity')}
+                    <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('quantity')}>
+                      <div className="flex items-center justify-end">
+                        <span>Quantity</span>
+                        <div className="ml-1">{renderSortIndicator('quantity')}</div>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('positionSize')}>
-                      Position Size {renderSortIndicator('positionSize')}
+                    <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('positionSize')}>
+                      <div className="flex items-center justify-end">
+                        <span>Position Size</span>
+                        <div className="ml-1">{renderSortIndicator('positionSize')}</div>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('entryPrice')}>
-                      Entry Price {renderSortIndicator('entryPrice')}
+                    <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('entryPrice')}>
+                      <div className="flex items-center justify-end">
+                        <span>Entry Price</span>
+                        <div className="ml-1">{renderSortIndicator('entryPrice')}</div>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('currentPrice')}>
-                      Current Price {renderSortIndicator('currentPrice')}
+                    <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('currentPrice')}>
+                      <div className="flex items-center justify-end">
+                        <span>Current Price</span>
+                        <div className="ml-1">{renderSortIndicator('currentPrice')}</div>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('unrealizedPnl')}>
-                      Unrealized PNL {renderSortIndicator('unrealizedPnl')}
+                    <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('unrealizedPnl')}>
+                      <div className="flex items-center justify-end">
+                        <span>Unrealized PNL</span>
+                        <div className="ml-1">{renderSortIndicator('unrealizedPnl')}</div>
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      Risk Score
+                    <th className="group px-6 py-3.5 text-center text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <div className="flex items-center justify-center">
+                        <span>Risk Score</span>
+                      </div>
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
                   {positions.map((position) => {
                     console.log('Rendering position:', position);
                     
@@ -1177,13 +1203,30 @@ const Dashboard: React.FC = () => {
                     const riskScore = volatilityFactor + sizeFactor + marginFactor;
                     
                     return (
-                      <tr key={position.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{position.asset || 'Unknown'}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${position.side === 'long' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                          {position.side.toUpperCase()}
+                      <tr key={position.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mr-3 font-medium">
+                              {position.asset.substring(0, 1)}
+                            </div>
+                            <div className="font-medium text-gray-900 dark:text-white">{position.asset || 'Unknown'}</div>
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${position.marginType && position.marginType === 'cross' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'}`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            position.side === 'long' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                          }`}>
+                            {position.side.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+                            position.marginType && position.marginType === 'cross' 
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' 
+                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                          }`}>
                             {position.marginType ? position.marginType.toUpperCase() : 'CROSS'}
                           </span>
                         </td>
@@ -1191,17 +1234,48 @@ const Dashboard: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">{formatCurrency(positionSize.toString())}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(position.entryPrice)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(position.currentPrice)}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${unrealizedPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                          {formatCurrency(position.unrealizedPnl || '0')}
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
+                          unrealizedPnl >= 0 
+                            ? 'text-green-600 dark:text-green-400' 
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          <div className="flex items-center justify-end">
+                            <span>{formatCurrency(position.unrealizedPnl || '0')}</span>
+                            <span className="ml-1.5">
+                              {unrealizedPnl >= 0 ? (
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                  <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                  <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </span>
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
                             <div 
-                              className={`h-2.5 rounded-full ${riskScore < 30 ? 'bg-green-500' : riskScore < 70 ? 'bg-yellow-500' : 'bg-red-500'}`} 
+                              className={`h-2.5 rounded-full ${
+                                riskScore < 30 
+                                  ? 'bg-green-500' 
+                                  : riskScore < 70 
+                                    ? 'bg-yellow-500' 
+                                    : 'bg-red-500'
+                              }`} 
                               style={{ width: `${riskScore}%` }}
                             ></div>
                           </div>
-                          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 mt-1 block">{riskScore}/100</span>
+                          <span className={`text-xs font-medium mt-1 block ${
+                            riskScore < 30 
+                              ? 'text-green-600 dark:text-green-400' 
+                              : riskScore < 70 
+                                ? 'text-yellow-600 dark:text-yellow-400' 
+                                : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {riskScore}/100
+                          </span>
                         </td>
                       </tr>
                     );

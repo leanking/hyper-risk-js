@@ -245,18 +245,21 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
     setSummaryData(sortedData);
   };
 
-  // Toggle asset table visibility
-  const toggleAssetTable = () => {
-    setShowAssetTable(!showAssetTable);
-  };
-
   // Render sort indicator
   const renderSortIndicator = (column: SortColumn) => {
     if (sortColumn !== column) return null;
     
     return (
-      <span className="ms-1">
-        {sortDirection === 'asc' ? '▲' : '▼'}
+      <span className="ml-1 inline-block">
+        {sortDirection === 'asc' ? (
+          <svg className="w-3 h-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        ) : (
+          <svg className="w-3 h-3 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
       </span>
     );
   };
@@ -289,96 +292,97 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
   }
 
   return (
-    <>
-      {/* Trading Performance Summary Card - Removed as it's now in the Account Summary card */}
-      
-      {/* PNL by Asset Card */}
-      <div className="card mb-4 historical-pnl-card">
-        <div className="card-header d-flex justify-content-between align-items-center">
-          <h5 className="card-title mb-0">Historical PNL by Asset</h5>
-          <button 
-            className="btn btn-sm btn-outline-primary" 
-            onClick={toggleAssetTable}
-          >
-            {showAssetTable ? 'Hide Details' : 'Show Details'}
-          </button>
-        </div>
-        <div className={`card-body ${showAssetTable ? 'p-3' : 'p-0'}`}>
-          {showAssetTable ? (
-            summaryData.length === 0 ? (
-              <div className="alert alert-info text-center">
-                <i className="bi bi-info-circle me-2"></i>
-                No trade history found for this wallet.
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 mb-6">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <h5 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Historical PNL by Asset</h5>
+        <button 
+          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md"
+          onClick={() => setShowAssetTable(!showAssetTable)}
+        >
+          {showAssetTable ? 'Hide Details' : 'Show Details'}
+        </button>
+      </div>
+      <div className={`${showAssetTable ? 'p-4' : 'p-0'}`}>
+        {showAssetTable ? (
+          summaryData.length === 0 ? (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg my-4">
+              <div className="flex items-center">
+                <svg className="h-5 w-5 mr-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="font-medium">No trade history found for this wallet.</span>
               </div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-striped table-hover">
-                  <thead>
-                    <tr>
-                      <th 
-                        className="cursor-pointer" 
-                        onClick={() => handleSort('asset')}
-                      >
-                        Asset {renderSortIndicator('asset')}
-                      </th>
-                      <th 
-                        className="cursor-pointer" 
-                        onClick={() => handleSort('totalRealizedPnl')}
-                      >
-                        Realized PNL {renderSortIndicator('totalRealizedPnl')}
-                      </th>
-                      <th 
-                        className="cursor-pointer" 
-                        onClick={() => handleSort('totalFees')}
-                      >
-                        Fees {renderSortIndicator('totalFees')}
-                      </th>
-                      <th 
-                        className="cursor-pointer" 
-                        onClick={() => handleSort('netPnl')}
-                      >
-                        Net PNL {renderSortIndicator('netPnl')}
-                      </th>
-                      <th 
-                        className="cursor-pointer" 
-                        onClick={() => handleSort('tradeCount')}
-                      >
-                        Trades {renderSortIndicator('tradeCount')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {summaryData.map((summary) => (
-                      <tr key={summary.asset}>
-                        <td><strong>{summary.asset}</strong></td>
-                        <td className={summary.totalRealizedPnl >= 0 ? 'text-success' : 'text-danger'}>
-                          {formatCurrency(summary.totalRealizedPnl)}
-                        </td>
-                        <td className="text-danger">
-                          {formatCurrency(summary.totalFees)}
-                        </td>
-                        <td className={summary.netPnl >= 0 ? 'text-success' : 'text-danger'}>
-                          <strong>{formatCurrency(summary.netPnl)}</strong>
-                        </td>
-                        <td><strong>{summary.tradeCount}</strong></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
+            </div>
           ) : (
-            <div className="text-center py-3" style={{ borderTop: '1px solid var(--card-border)', background: 'rgba(0,0,0,0.02)' }}>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('asset')}
+                    >
+                      Asset {renderSortIndicator('asset')}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('totalRealizedPnl')}
+                    >
+                      Realized PNL {renderSortIndicator('totalRealizedPnl')}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('totalFees')}
+                    >
+                      Fees {renderSortIndicator('totalFees')}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('netPnl')}
+                    >
+                      Net PNL {renderSortIndicator('netPnl')}
+                    </th>
+                    <th 
+                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort('tradeCount')}
+                    >
+                      Trades {renderSortIndicator('tradeCount')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  {summaryData.map((summary) => (
+                    <tr key={summary.asset} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{summary.asset}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${summary.totalRealizedPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {formatCurrency(summary.totalRealizedPnl)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-red-600 dark:text-red-400">
+                        {formatCurrency(summary.totalFees)}
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-bold text-right ${summary.netPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {formatCurrency(summary.netPnl)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right text-gray-900 dark:text-white">{summary.tradeCount}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        ) : (
+          <div className="text-center py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {summaryData.length > 0 ? (
                 <>{summaryData.length} assets traded • Click "Show Details" to view breakdown</>
               ) : (
                 <>No trade history found for this wallet</>
               )}
-            </div>
-          )}
-        </div>
+            </p>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

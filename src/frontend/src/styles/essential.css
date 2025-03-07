@@ -1,0 +1,11 @@
+/* Essential styles that don't conflict with Tailwind */
+
+/* Import Poppins font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Add any essential global styles here */
+html, body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Add any essential utility classes that aren't covered by Tailwind */ 

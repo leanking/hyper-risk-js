@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import '../styles/App.css';
+// import '../styles/App.css'; // Removed to prevent conflicts with Tailwind
 import { v4 as uuidv4 } from 'uuid';
 import HistoricalPnl from '../components/HistoricalPnl';
 import { API_ENDPOINTS, API_BASE_URL } from '../config/api.config';
@@ -165,40 +165,38 @@ interface ApiResponse<T> {
 
 // Replace the Tooltip component with a Tailwind version
 const Tooltip = ({ text }: { text: string }) => {
-  const [show, setShow] = useState(false);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-
   return (
     <div className="relative inline-block ml-2">
-      <div
-        onMouseEnter={() => setShow(true)}
-        onMouseLeave={() => setShow(false)}
-        className="cursor-help"
-      >
+      <span className="cursor-help text-gray-500 dark:text-gray-400 inline-flex items-center justify-center">
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          className="h-4 w-4 text-gray-400 hover:text-gray-500 inline-block"
-          viewBox="0 0 20 20" 
-          fill="currentColor"
+          className="h-4 w-4 flex-shrink-0" 
+          width="16" 
+          height="16" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor"
+          style={{ maxWidth: '16px', maxHeight: '16px', overflow: 'hidden' }}
         >
-          <path 
-            fillRule="evenodd" 
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" 
-            clipRule="evenodd" 
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-      </div>
-      {show && (
-        <div
-          ref={tooltipRef}
-          className="absolute z-10 w-48 px-2 py-1 -mt-1 text-sm text-white bg-gray-900 rounded-lg shadow-lg -left-1/2 transform -translate-x-1/2 -translate-y-full"
-        >
-          {text}
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-            <div className="border-8 border-transparent border-t-gray-900"></div>
-          </div>
+      </span>
+      <div 
+        className="absolute z-10 w-48 px-2 py-1 -mt-1 text-sm text-white bg-gray-900 rounded-lg shadow-lg -left-1/2 transform -translate-x-1/2 -translate-y-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200"
+      >
+        {text}
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
+          <svg 
+            className="h-2 w-2 text-gray-900 flex-shrink-0" 
+            width="8" 
+            height="8" 
+            viewBox="0 0 10 10"
+            style={{ maxWidth: '8px', maxHeight: '8px', overflow: 'hidden' }}
+          >
+            <polygon points="0,0 5,5 10,0" fill="currentColor" />
+          </svg>
         </div>
-      )}
+      </div>
     </div>
   );
 };
@@ -206,10 +204,186 @@ const Tooltip = ({ text }: { text: string }) => {
 // Update the CardTitle component to use Tailwind
 const CardTitle = ({ title, tooltip }: { title: string; tooltip?: string }) => {
   return (
-    <h5 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-center">
-      {title}
+    <div className="flex items-center mb-2">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
       {tooltip && <Tooltip text={tooltip} />}
-    </h5>
+    </div>
+  );
+};
+
+// MetricCard component for consistent styling of metric cards
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  tooltip?: string;
+  trend?: 'positive' | 'negative' | 'neutral';
+  suffix?: string;
+  isLoading?: boolean;
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({ 
+  title, 
+  value, 
+  tooltip, 
+  trend = 'neutral',
+  suffix = '',
+  isLoading = false 
+}) => {
+  // Determine text color based on trend
+  const getColorClass = () => {
+    switch (trend) {
+      case 'positive':
+        return 'text-green-600 dark:text-green-400';
+      case 'negative':
+        return 'text-red-600 dark:text-red-400';
+      case 'neutral':
+      default:
+        return 'text-gray-900 dark:text-white';
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+          {title}
+        </h3>
+        {tooltip && <Tooltip text={tooltip} />}
+      </div>
+      {isLoading ? (
+        <div className="animate-pulse h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mt-2"></div>
+      ) : (
+        <p className={`text-lg font-bold ${getColorClass()}`}>
+          {value}{suffix}
+        </p>
+      )}
+    </div>
+  );
+};
+
+// Section Card component for consistent styling of section cards
+interface SectionCardProps {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const SectionCard: React.FC<SectionCardProps> = ({ title, children, className = '' }) => {
+  return (
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 h-full ${className}`}>
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">{title}</h2>
+      </div>
+      <div className="p-6">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// TableCard component for consistent styling of tables
+interface TableCardProps {
+  title: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const TableCard: React.FC<TableCardProps> = ({ title, children, className = '' }) => {
+  return (
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 ${className}`}>
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">{title}</h2>
+      </div>
+      <div className="p-4">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// FormCard component for consistent styling of forms
+interface FormCardProps {
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+}
+
+const FormCard: React.FC<FormCardProps> = ({ title, children, className = '' }) => {
+  return (
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 ${className}`}>
+      {title && (
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">{title}</h2>
+        </div>
+      )}
+      <div className="p-6">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+// AlertCard component for consistent styling of alerts
+interface AlertCardProps {
+  type: 'error' | 'info' | 'warning' | 'success';
+  message: string;
+  className?: string;
+}
+
+const AlertCard: React.FC<AlertCardProps> = ({ type, message, className = '' }) => {
+  const getTypeStyles = () => {
+    switch (type) {
+      case 'error':
+        return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400';
+      case 'info':
+        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400';
+      case 'warning':
+        return 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-400';
+      case 'success':
+        return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400';
+      default:
+        return 'bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-400';
+    }
+  };
+
+  const getIcon = () => {
+    switch (type) {
+      case 'error':
+        return (
+          <svg className="h-5 w-5 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case 'info':
+        return (
+          <svg className="h-5 w-5 mr-3 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      case 'warning':
+        return (
+          <svg className="h-5 w-5 mr-3 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        );
+      case 'success':
+        return (
+          <svg className="h-5 w-5 mr-3 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className={`${getTypeStyles()} px-6 py-4 rounded-lg shadow-sm ${className}`}>
+      <div className="flex items-center">
+        {getIcon()}
+        <span className="font-medium">{message}</span>
+      </div>
+    </div>
   );
 };
 
@@ -750,8 +924,34 @@ const Dashboard: React.FC = () => {
     if (positionSortColumn !== column) return null;
     
     return (
-      <span className="ms-1">
-        {positionSortDirection === 'asc' ? '▲' : '▼'}
+      <span className="ml-1 inline-block">
+        {positionSortDirection === 'asc' ? (
+          <svg 
+            className="w-3 h-3 text-gray-500 dark:text-gray-400 flex-shrink-0" 
+            width="12" 
+            height="12" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ maxWidth: '12px', maxHeight: '12px', overflow: 'hidden' }}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+          </svg>
+        ) : (
+          <svg 
+            className="w-3 h-3 text-gray-500 dark:text-gray-400 flex-shrink-0" 
+            width="12" 
+            height="12" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ maxWidth: '12px', maxHeight: '12px', overflow: 'hidden' }}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
       </span>
     );
   };
@@ -759,7 +959,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Wallet Address Form */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+      <FormCard className="mb-6">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="walletAddress" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -768,7 +968,7 @@ const Dashboard: React.FC = () => {
             <div className="flex gap-2">
               <input
                 type="text"
-                className="flex-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
                 id="walletAddress"
                 placeholder="0x..."
                 value={walletAddress}
@@ -778,11 +978,17 @@ const Dashboard: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm font-medium"
               >
                 {isLoading ? (
                   <>
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <svg 
+                      className="animate-spin h-5 w-5 flex-shrink-0" 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 24 24"
+                      style={{ maxWidth: '20px', maxHeight: '20px', overflow: 'hidden' }}
+                    >
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -798,524 +1004,337 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
         </form>
-      </div>
+      </FormCard>
       
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
-          {error}
-        </div>
+        <AlertCard type="error" message={error} className="mb-6" />
       )}
       
       {/* Current Positions */}
       {hasSubmitted && positions.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mb-6">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h5 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Current Positions</h5>
+        <TableCard title="Current Positions" className="mb-6">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('asset')}>
+                    Asset {renderSortIndicator('asset')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('side')}>
+                    Side {renderSortIndicator('side')}
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Margin Type
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('quantity')}>
+                    Quantity {renderSortIndicator('quantity')}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('positionSize')}>
+                    Position Size {renderSortIndicator('positionSize')}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('entryPrice')}>
+                    Entry Price {renderSortIndicator('entryPrice')}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('currentPrice')}>
+                    Current Price {renderSortIndicator('currentPrice')}
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={() => sortPositions('unrealizedPnl')}>
+                    Unrealized PNL {renderSortIndicator('unrealizedPnl')}
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Risk Score
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {positions.map((position) => {
+                  console.log('Rendering position:', position);
+                  
+                  const entryPrice = parseFloat(position.entryPrice);
+                  const currentPrice = parseFloat(position.currentPrice);
+                  const quantity = parseFloat(position.quantity);
+                  const unrealizedPnl = position.unrealizedPnl ? parseFloat(position.unrealizedPnl) : 0;
+                  
+                  // Calculate position size (quantity * current price)
+                  const positionSize = quantity * currentPrice;
+                  
+                  // Calculate risk score out of 100 (more sophisticated)
+                  // Factors: price volatility, position size relative to account, leverage
+                  const priceDiff = Math.abs(currentPrice - entryPrice) / entryPrice;
+                  const volatilityFactor = Math.min(50, Math.round(priceDiff * 500)); // 50% of score based on price volatility
+                  
+                  // Size factor - larger positions are riskier
+                  // This is a placeholder - in a real app, you'd compare to account size
+                  const sizeFactor = Math.min(30, Math.round((positionSize / 10000) * 30)); // 30% of score based on size
+                  
+                  // Margin type factor - isolated is less risky for the account as a whole
+                  const marginFactor = position.marginType === 'cross' ? 20 : 10; // 20% of score based on margin type
+                  
+                  // Combined risk score out of 100
+                  const riskScore = volatilityFactor + sizeFactor + marginFactor;
+                  
+                  return (
+                    <tr key={position.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{position.asset || 'Unknown'}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${position.side === 'long' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {position.side.toUpperCase()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${position.marginType && position.marginType === 'cross' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'}`}>
+                          {position.marginType ? position.marginType.toUpperCase() : 'CROSS'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">{isNaN(quantity) ? '0.0000' : quantity.toFixed(4)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">{formatCurrency(positionSize.toString())}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(position.entryPrice)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(position.currentPrice)}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${unrealizedPnl >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {formatCurrency(position.unrealizedPnl || '0')}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                          <div 
+                            className={`h-2.5 rounded-full ${riskScore < 30 ? 'bg-green-500' : riskScore < 70 ? 'bg-yellow-500' : 'bg-red-500'}`} 
+                            style={{ width: `${riskScore}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs font-medium text-gray-700 dark:text-gray-300 mt-1 block">{riskScore}/100</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead>
-                  <tr>
-                    <th className="cursor-pointer" onClick={() => sortPositions('asset')}>
-                      Asset {renderSortIndicator('asset')}
-                    </th>
-                    <th className="cursor-pointer" onClick={() => sortPositions('side')}>
-                      Side {renderSortIndicator('side')}
-                    </th>
-                    <th>Margin Type</th>
-                    <th className="cursor-pointer" onClick={() => sortPositions('quantity')}>
-                      Quantity {renderSortIndicator('quantity')}
-                    </th>
-                    <th className="cursor-pointer" onClick={() => sortPositions('positionSize')}>
-                      Position Size {renderSortIndicator('positionSize')}
-                    </th>
-                    <th className="cursor-pointer" onClick={() => sortPositions('entryPrice')}>
-                      Entry Price {renderSortIndicator('entryPrice')}
-                    </th>
-                    <th className="cursor-pointer" onClick={() => sortPositions('currentPrice')}>
-                      Current Price {renderSortIndicator('currentPrice')}
-                    </th>
-                    <th className="cursor-pointer" onClick={() => sortPositions('unrealizedPnl')}>
-                      Unrealized PNL {renderSortIndicator('unrealizedPnl')}
-                    </th>
-                    <th>Risk Score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {positions.map((position) => {
-                    console.log('Rendering position:', position);
-                    
-                    const entryPrice = parseFloat(position.entryPrice);
-                    const currentPrice = parseFloat(position.currentPrice);
-                    const quantity = parseFloat(position.quantity);
-                    const unrealizedPnl = position.unrealizedPnl ? parseFloat(position.unrealizedPnl) : 0;
-                    
-                    // Calculate position size (quantity * current price)
-                    const positionSize = quantity * currentPrice;
-                    
-                    // Calculate risk score out of 100 (more sophisticated)
-                    // Factors: price volatility, position size relative to account, leverage
-                    const priceDiff = Math.abs(currentPrice - entryPrice) / entryPrice;
-                    const volatilityFactor = Math.min(50, Math.round(priceDiff * 500)); // 50% of score based on price volatility
-                    
-                    // Size factor - larger positions are riskier
-                    // This is a placeholder - in a real app, you'd compare to account size
-                    const sizeFactor = Math.min(30, Math.round((positionSize / 10000) * 30)); // 30% of score based on size
-                    
-                    // Margin type factor - isolated is less risky for the account as a whole
-                    const marginFactor = position.marginType === 'cross' ? 20 : 10; // 20% of score based on margin type
-                    
-                    // Combined risk score out of 100
-                    const riskScore = volatilityFactor + sizeFactor + marginFactor;
-                    
-                    return (
-                      <tr key={position.id}>
-                        <td><strong>{position.asset || 'Unknown'}</strong></td>
-                        <td className={position.side === 'long' ? 'text-success' : 'text-danger'}>
-                          <strong>{position.side.toUpperCase()}</strong>
-                        </td>
-                        <td>
-                          <span className={`badge ${position.marginType && position.marginType === 'cross' ? 'bg-primary' : 'bg-warning'}`}>
-                            {position.marginType ? position.marginType.toUpperCase() : 'CROSS'}
-                          </span>
-                        </td>
-                        <td><strong>{isNaN(quantity) ? '0.0000' : quantity.toFixed(4)}</strong></td>
-                        <td><strong>{formatCurrency(positionSize.toString())}</strong></td>
-                        <td>{formatCurrency(position.entryPrice)}</td>
-                        <td>{formatCurrency(position.currentPrice)}</td>
-                        <td className={unrealizedPnl >= 0 ? 'text-success' : 'text-danger'}>
-                          {formatCurrency(position.unrealizedPnl || '0')}
-                        </td>
-                        <td>
-                          <div className="progress" style={{ height: '20px' }}>
-                            <div 
-                              className={`progress-bar ${riskScore < 30 ? 'bg-success' : riskScore < 70 ? 'bg-warning' : 'bg-danger'}`} 
-                              role="progressbar" 
-                              style={{ width: `${riskScore}%` }} 
-                              aria-valuenow={riskScore} 
-                              aria-valuemin={0} 
-                              aria-valuemax={100}
-                            >
-                              <span className="risk-score-text">{riskScore}/100</span>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        </TableCard>
       )}
       
       {/* No Data Message */}
       {!isLoading && hasSubmitted && walletAddress && !error && positions.length === 0 && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6">
-          No positions found for this wallet. Please check the address and try again.
-        </div>
+        <AlertCard 
+          type="info" 
+          message="No positions found for this wallet. Please check the address and try again." 
+          className="mb-6" 
+        />
       )}
       
       {/* Dashboard Cards Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Account Summary Card */}
+        {/* Account Summary Section */}
         {hasSubmitted && userState && (
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg h-full">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Account Summary</h2>
-              </div>
-              <div className="p-6">
-                <div className="grid gap-6">
-                  {/* Row 1 */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Account Value" 
-                          />
-                          <p className="card-text value-text">
-                            {formatCurrency(userState.crossMarginSummary.accountValue)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Margin Usage" 
-                            tooltip="The percentage of your account value being used as margin. Lower values indicate less risk."
-                          />
-                          <p className={`card-text ${(() => {
-                            // Check if crossMarginSummary exists
-                            if (!userState.crossMarginSummary) {
-                              return '';
-                            }
-                            
-                            // Try to use totalMarginUsedRatio if it exists
-                            if (userState.crossMarginSummary.totalMarginUsedRatio) {
-                              const ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
-                              if (isNaN(ratio)) return '';
-                              return ratio < 0.3 ? 'text-success' : ratio < 0.7 ? 'text-warning' : 'text-danger';
-                            }
-                            
-                            // Calculate from totalMarginUsed and accountValue if available
-                            if (userState.crossMarginSummary.totalMarginUsed && 
-                                userState.crossMarginSummary.accountValue) {
-                              const marginUsed = parseFloat(userState.crossMarginSummary.totalMarginUsed);
-                              const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
-                              if (!isNaN(marginUsed) && !isNaN(accountValue) && accountValue > 0) {
-                                const ratio = marginUsed / accountValue;
-                                return ratio < 0.3 ? 'text-success' : ratio < 0.7 ? 'text-warning' : 'text-danger';
-                              }
-                            }
-                            
-                            return '';
-                          })()}`}>
-                            {(() => {
-                              // Check if crossMarginSummary exists
-                              if (!userState.crossMarginSummary) {
-                                return 'N/A';
-                              }
-                              
-                              // Try to use totalMarginUsedRatio if it exists
-                              if (userState.crossMarginSummary.totalMarginUsedRatio) {
-                                const ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
-                                return isNaN(ratio) ? 'N/A' : `${(ratio * 100).toFixed(2)}%`;
-                              }
-                              
-                              // Calculate from totalMarginUsed and accountValue if available
-                              if (userState.crossMarginSummary.totalMarginUsed && 
-                                  userState.crossMarginSummary.accountValue) {
-                                const marginUsed = parseFloat(userState.crossMarginSummary.totalMarginUsed);
-                                const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
-                                if (!isNaN(marginUsed) && !isNaN(accountValue) && accountValue > 0) {
-                                  return `${((marginUsed / accountValue) * 100).toFixed(2)}%`;
-                                }
-                              }
-                              
-                              return 'N/A';
-                            })()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Maintenance Margin Ratio" 
-                            tooltip="The ratio of maintenance margin to account value. If this exceeds 100%, your positions may be liquidated."
-                          />
-                          <p className={`card-text ${(() => {
-                            // Check if crossMarginSummary exists
-                            if (!userState.crossMarginSummary) {
-                              return '';
-                            }
-                            
-                            // Try to use totalMmRatio if it exists
-                            if (userState.crossMarginSummary.totalMmRatio) {
-                              const ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
-                              if (isNaN(ratio)) return '';
-                              return ratio < 0.1 ? 'text-success' : ratio < 0.2 ? 'text-warning' : 'text-danger';
-                            }
-                            
-                            // Calculate from totalMm and accountValue if available
-                            if (userState.crossMarginSummary.totalMm && 
-                                userState.crossMarginSummary.accountValue) {
-                              const totalMm = parseFloat(userState.crossMarginSummary.totalMm);
-                              const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
-                              if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
-                                const ratio = totalMm / accountValue;
-                                return ratio < 0.1 ? 'text-success' : ratio < 0.2 ? 'text-warning' : 'text-danger';
-                              }
-                            }
-                            
-                            return '';
-                          })()}`}>
-                            {(() => {
-                              // Check if crossMarginSummary exists
-                              if (!userState.crossMarginSummary) {
-                                return 'N/A';
-                              }
-                              
-                              // Try to use totalMmRatio if it exists
-                              if (userState.crossMarginSummary.totalMmRatio) {
-                                const ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
-                                return isNaN(ratio) ? 'N/A' : `${(ratio * 100).toFixed(2)}%`;
-                              }
-                              
-                              // Calculate from totalMm and accountValue if available
-                              if (userState.crossMarginSummary.totalMm && 
-                                  userState.crossMarginSummary.accountValue) {
-                                const totalMm = parseFloat(userState.crossMarginSummary.totalMm);
-                                const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
-                                if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
-                                  return `${((totalMm / accountValue) * 100).toFixed(2)}%`;
-                                }
-                              }
-                              
-                              return 'N/A';
-                            })()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Row 2 */}
-                  <div className="summary-row">
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Unrealized PNL" 
-                          />
-                          <p className={`card-text ${parseFloat(unrealizedPnl) >= 0 ? 'text-success' : 'text-danger'}`}>
-                            {formatCurrency(unrealizedPnl)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Total Realized PNL" 
-                            tooltip="The sum of all profits and losses from closed positions. Only for the last 2,000 trades."
-                          />
-                          <p className={`card-text ${(pnlData?.metrics?.totalRealizedPnl || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-                            {formatCurrency(pnlData?.metrics?.totalRealizedPnl || 0)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Total Fees" 
-                          />
-                          <p className="card-text text-danger">
-                            {formatCurrency(pnlData?.metrics?.totalFees || 0)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Row 3 */}
-                  <div className="summary-row">
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Net PNL" 
-                            tooltip="Total profit or loss after subtracting fees from realized PNL."
-                          />
-                          <p className={`card-text ${(pnlData?.metrics?.netPnl || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
-                            {formatCurrency(pnlData?.metrics?.netPnl || 0)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Win Rate" 
-                            tooltip={`${pnlData?.metrics?.profitableTrades || 0} wins / ${pnlData?.metrics?.unprofitableTrades || 0} losses`}
-                          />
-                          <p className={`card-text ${(pnlData?.metrics?.winRate || 0) >= 50 ? 'text-success' : 'text-danger'}`}>
-                            {(pnlData?.metrics?.winRate || 0).toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="summary-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Total PNL" 
-                            tooltip="Realized + Unrealized PNL combined"
-                          />
-                          <p className={`card-text ${((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl)) >= 0 ? 'text-success' : 'text-danger'}`}>
-                            {formatCurrency((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl))}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <SectionCard title="Account Summary" className="mb-6">
+              {/* Account Value Metrics */}
+              <div className="mb-6">
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Account Value</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <MetricCard 
+                    title="Total Account Value" 
+                    value={formatCurrency(userState.crossMarginSummary.accountValue)}
+                    trend="neutral"
+                  />
+                  <MetricCard 
+                    title="Total Position Value" 
+                    value={formatCurrency(userState.crossMarginSummary.totalNtlPos || '0')}
+                    trend="neutral"
+                  />
                 </div>
               </div>
-            </div>
+              
+              {/* Margin Metrics */}
+              <div className="mb-6">
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Margin Usage</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <MetricCard 
+                    title="Margin Usage" 
+                    value={(() => {
+                      if (!userState.crossMarginSummary) return '0';
+                      if (userState.crossMarginSummary.totalMarginUsedRatio) {
+                        const ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
+                        return isNaN(ratio) ? '0' : (ratio * 100).toFixed(2);
+                      }
+                      if (userState.crossMarginSummary.totalMarginUsed && userState.crossMarginSummary.accountValue) {
+                        const totalMarginUsed = parseFloat(userState.crossMarginSummary.totalMarginUsed);
+                        const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                        if (!isNaN(totalMarginUsed) && !isNaN(accountValue) && accountValue > 0) {
+                          return ((totalMarginUsed / accountValue) * 100).toFixed(2);
+                        }
+                      }
+                      return '0';
+                    })()}
+                    suffix="%"
+                    tooltip="The percentage of your account value being used as margin. Lower values indicate less risk."
+                    trend={(() => {
+                      let ratio = 0;
+                      if (userState.crossMarginSummary.totalMarginUsedRatio) {
+                        ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
+                      } else if (userState.crossMarginSummary.totalMarginUsed && userState.crossMarginSummary.accountValue) {
+                        const totalMarginUsed = parseFloat(userState.crossMarginSummary.totalMarginUsed);
+                        const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                        if (!isNaN(totalMarginUsed) && !isNaN(accountValue) && accountValue > 0) {
+                          ratio = totalMarginUsed / accountValue;
+                        }
+                      }
+                      return ratio < 0.3 ? 'positive' : ratio < 0.7 ? 'neutral' : 'negative';
+                    })()}
+                  />
+                  <MetricCard 
+                    title="Maintenance Margin" 
+                    value={formatCurrency(userState.crossMarginSummary.totalMm || '0')}
+                    tooltip="The minimum amount of equity you must maintain to avoid liquidation."
+                    trend="neutral"
+                  />
+                  <MetricCard 
+                    title="Maintenance Margin Ratio" 
+                    value={(() => {
+                      if (!userState.crossMarginSummary) return '0';
+                      if (userState.crossMarginSummary.totalMmRatio) {
+                        const ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
+                        return isNaN(ratio) ? '0' : (ratio * 100).toFixed(2);
+                      }
+                      if (userState.crossMarginSummary.totalMm && userState.crossMarginSummary.accountValue) {
+                        const totalMm = parseFloat(userState.crossMarginSummary.totalMm);
+                        const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                        if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
+                          return ((totalMm / accountValue) * 100).toFixed(2);
+                        }
+                      }
+                      return '0';
+                    })()}
+                    suffix="%"
+                    tooltip="The ratio of maintenance margin to account value. If this exceeds 100%, your positions may be liquidated."
+                    trend={(() => {
+                      let ratio = 0;
+                      if (userState.crossMarginSummary.totalMmRatio) {
+                        ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
+                      } else if (userState.crossMarginSummary.totalMm && userState.crossMarginSummary.accountValue) {
+                        const totalMm = parseFloat(userState.crossMarginSummary.totalMm);
+                        const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
+                        if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
+                          ratio = totalMm / accountValue;
+                        }
+                      }
+                      return ratio < 0.1 ? 'positive' : ratio < 0.2 ? 'neutral' : 'negative';
+                    })()}
+                  />
+                </div>
+              </div>
+              
+              {/* PNL Metrics */}
+              <div>
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Profit & Loss</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <MetricCard 
+                    title="Unrealized PNL" 
+                    value={formatCurrency(unrealizedPnl)}
+                    trend={parseFloat(unrealizedPnl) >= 0 ? 'positive' : 'negative'}
+                  />
+                  <MetricCard 
+                    title="Realized PNL" 
+                    value={formatCurrency(pnlData?.metrics?.totalRealizedPnl || 0)}
+                    tooltip="The sum of all profits and losses from closed positions."
+                    trend={(pnlData?.metrics?.totalRealizedPnl || 0) >= 0 ? 'positive' : 'negative'}
+                  />
+                  <MetricCard 
+                    title="Total PNL" 
+                    value={formatCurrency((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl))}
+                    tooltip="Realized + Unrealized PNL combined"
+                    trend={((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl)) >= 0 ? 'positive' : 'negative'}
+                  />
+                  <MetricCard 
+                    title="Total Fees" 
+                    value={formatCurrency(pnlData?.metrics?.totalFees || 0)}
+                    trend="negative"
+                  />
+                  <MetricCard 
+                    title="Net PNL" 
+                    value={formatCurrency(pnlData?.metrics?.netPnl || 0)}
+                    tooltip="Total profit or loss after subtracting fees from realized PNL."
+                    trend={(pnlData?.metrics?.netPnl || 0) >= 0 ? 'positive' : 'negative'}
+                  />
+                  <MetricCard 
+                    title="Win Rate" 
+                    value={(pnlData?.metrics?.winRate || 0).toFixed(2)}
+                    suffix="%"
+                    tooltip={`${pnlData?.metrics?.profitableTrades || 0} wins / ${pnlData?.metrics?.unprofitableTrades || 0} losses`}
+                    trend={(pnlData?.metrics?.winRate || 0) >= 50 ? 'positive' : 'negative'}
+                  />
+                </div>
+              </div>
+            </SectionCard>
           </div>
         )}
 
-        {/* Risk Metrics Card */}
+        {/* Risk Metrics Section */}
         {hasSubmitted && riskMetrics && (
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg h-full">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Risk Metrics</h2>
-              </div>
-              <div className="p-6">
-                <div className="grid gap-6">
-                  {/* Row 1 */}
-                  <div className="risk-metrics-row">
-                    <div className="risk-metrics-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Volatility" 
-                            tooltip="Measures the variation in your portfolio's returns over time. Higher volatility indicates higher risk."
-                          />
-                          <p className={`card-text ${parseFloat(riskMetrics.volatility) < 20 ? 'text-success' : parseFloat(riskMetrics.volatility) < 40 ? 'text-warning' : 'text-danger'}`}>
-                            {parseFloat(riskMetrics.volatility).toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="risk-metrics-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Max Drawdown" 
-                            tooltip="The largest percentage drop from a peak to a trough in your account value. Measures downside risk."
-                          />
-                          <p className={`card-text ${parseFloat(riskMetrics.drawdown) < 15 ? 'text-success' : parseFloat(riskMetrics.drawdown) < 30 ? 'text-warning' : 'text-danger'}`}>
-                            {parseFloat(riskMetrics.drawdown).toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Row 2 */}
-                  <div className="risk-metrics-row">
-                    <div className="risk-metrics-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Value at Risk (VaR)" 
-                            tooltip="The maximum potential loss expected with 95% confidence over a one-day period."
-                          />
-                          <p className={`card-text ${parseFloat(riskMetrics.valueAtRisk) < 500 ? 'text-success' : parseFloat(riskMetrics.valueAtRisk) < 1000 ? 'text-warning' : 'text-danger'}`}>
-                            {formatCurrency(riskMetrics.valueAtRisk)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="risk-metrics-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Sharpe Ratio" 
-                            tooltip="Measures risk-adjusted return. Higher values indicate better risk-adjusted performance."
-                          />
-                          <p className={`card-text ${parseFloat(riskMetrics.sharpeRatio) > 1.5 ? 'text-success' : parseFloat(riskMetrics.sharpeRatio) > 0.5 ? 'text-warning' : 'text-danger'}`}>
-                            {parseFloat(riskMetrics.sharpeRatio).toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Row 3 */}
-                  <div className="risk-metrics-row">
-                    <div className="risk-metrics-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Sortino Ratio" 
-                            tooltip="Similar to Sharpe ratio but only considers downside risk. Higher values indicate better risk-adjusted returns."
-                          />
-                          <p className={`card-text ${parseFloat(riskMetrics.sortinoRatio) > 1.5 ? 'text-success' : parseFloat(riskMetrics.sortinoRatio) > 0.5 ? 'text-warning' : 'text-danger'}`}>
-                            {parseFloat(riskMetrics.sortinoRatio).toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="risk-metrics-card">
-                      <div className="card">
-                        <div className="card-body">
-                          <CardTitle 
-                            title="Concentration" 
-                            tooltip="Measures how concentrated your portfolio is in specific assets. Higher values indicate higher concentration risk."
-                          />
-                          <p className={`card-text ${parseFloat(riskMetrics.concentration) < 30 ? 'text-success' : parseFloat(riskMetrics.concentration) < 60 ? 'text-warning' : 'text-danger'}`}>
-                            {parseFloat(riskMetrics.concentration).toFixed(2)}%
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <SectionCard title="Risk Metrics">
+              {/* Volatility Metrics */}
+              <div className="mb-6">
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Volatility & Drawdown</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <MetricCard 
+                    title="Volatility" 
+                    value={parseFloat(riskMetrics.volatility).toFixed(2)}
+                    suffix="%"
+                    tooltip="Measures the variation in your portfolio's returns over time. Higher volatility indicates higher risk."
+                    trend={parseFloat(riskMetrics.volatility) < 20 ? 'positive' : parseFloat(riskMetrics.volatility) < 40 ? 'neutral' : 'negative'}
+                  />
+                  <MetricCard 
+                    title="Max Drawdown" 
+                    value={parseFloat(riskMetrics.drawdown).toFixed(2)}
+                    suffix="%"
+                    tooltip="The largest percentage drop from a peak to a trough in your account value. Measures downside risk."
+                    trend={parseFloat(riskMetrics.drawdown) < 15 ? 'positive' : parseFloat(riskMetrics.drawdown) < 30 ? 'neutral' : 'negative'}
+                  />
+                  <MetricCard 
+                    title="Value at Risk (VaR)" 
+                    value={formatCurrency(riskMetrics.valueAtRisk)}
+                    tooltip="The maximum potential loss expected over a specific time period with a certain confidence level."
+                    trend={parseFloat(riskMetrics.valueAtRisk) < 500 ? 'positive' : parseFloat(riskMetrics.valueAtRisk) < 1000 ? 'neutral' : 'negative'}
+                  />
                 </div>
               </div>
-            </div>
+              
+              {/* Performance Metrics */}
+              <div className="mb-6">
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Performance Ratios</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <MetricCard 
+                    title="Sharpe Ratio" 
+                    value={parseFloat(riskMetrics.sharpeRatio).toFixed(2)}
+                    tooltip="Measures risk-adjusted return. Higher values indicate better risk-adjusted performance."
+                    trend={parseFloat(riskMetrics.sharpeRatio) > 1.5 ? 'positive' : parseFloat(riskMetrics.sharpeRatio) > 0.5 ? 'neutral' : 'negative'}
+                  />
+                  <MetricCard 
+                    title="Sortino Ratio" 
+                    value={parseFloat(riskMetrics.sortinoRatio).toFixed(2)}
+                    tooltip="Similar to Sharpe ratio but only penalizes downside volatility. Higher values are better."
+                    trend={parseFloat(riskMetrics.sortinoRatio) > 1.5 ? 'positive' : parseFloat(riskMetrics.sortinoRatio) > 0.5 ? 'neutral' : 'negative'}
+                  />
+                </div>
+              </div>
+              
+              {/* Portfolio Metrics */}
+              <div>
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3">Portfolio Composition</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  <MetricCard 
+                    title="Concentration" 
+                    value={parseFloat(riskMetrics.concentration).toFixed(2)}
+                    suffix="%"
+                    tooltip="Measures how concentrated your portfolio is in specific assets. Higher values indicate higher concentration risk."
+                    trend={parseFloat(riskMetrics.concentration) < 30 ? 'positive' : parseFloat(riskMetrics.concentration) < 60 ? 'neutral' : 'negative'}
+                  />
+                </div>
+              </div>
+            </SectionCard>
           </div>
         )}
       </div>
-      
-      {/* Historical PNL Component */}
-      {hasSubmitted && walletAddress && !error && (
-        <HistoricalPnl walletAddress={walletAddress} />
-      )}
-      
-      {/* Initial State Message */}
-      {!isLoading && !hasSubmitted && !error && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
-          <h3 className="text-2xl font-semibold text-center mb-6 text-gray-900 dark:text-white">
-            Enter a wallet address to view risk metrics and positions
-          </h3>
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
-            This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            <div className="feature-item">
-              <div className="feature-icon">📊</div>
-              <div className="feature-content">
-                <h4 className="feature-title">PNL Tracking</h4>
-                <div className="feature-text">Unrealized and realized PNL</div>
-              </div>
-            </div>
-            <div className="feature-item">
-              <div className="feature-icon">📈</div>
-              <div className="feature-content">
-                <h4 className="feature-title">Position Monitoring</h4>
-                <div className="feature-text">Current open positions</div>
-              </div>
-            </div>
-            <div className="feature-item">
-              <div className="feature-icon">⚖️</div>
-              <div className="feature-content">
-                <h4 className="feature-title">Risk Assessment</h4>
-                <div className="feature-text">Risk metrics for your account</div>
-              </div>
-            </div>
-            <div className="feature-item">
-              <div className="feature-icon">🔍</div>
-              <div className="feature-content">
-                <h4 className="feature-title">Detailed Analysis</h4>
-                <div className="feature-text">Position-specific risk analysis</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

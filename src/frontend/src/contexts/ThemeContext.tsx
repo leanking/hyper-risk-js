@@ -12,9 +12,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeType>('dark'); // Default to dark mode
 
-  // Apply theme attribute to body when theme changes
+  // Apply theme class to html element when theme changes
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -23,6 +27,10 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const savedTheme = localStorage.getItem('theme') as ThemeType | null;
     if (savedTheme) {
       setTheme(savedTheme);
+    } else {
+      // Check for user's system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
     }
   }, []);
 

@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/App.css';
 import { v4 as uuidv4 } from 'uuid';
 import HistoricalPnl from '../components/HistoricalPnl';
-import { Overlay, Tooltip as BSTooltip } from 'react-bootstrap';
 import { API_ENDPOINTS, API_BASE_URL } from '../config/api.config';
 
 // Helper function to format currency values
@@ -165,39 +163,50 @@ interface ApiResponse<T> {
   timestamp: Date;
 }
 
-// React Bootstrap Tooltip component
+// Replace the Tooltip component with a Tailwind version
 const Tooltip = ({ text }: { text: string }) => {
   const [show, setShow] = useState(false);
-  const targetRef = useRef(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   return (
-    <>
-      <span 
-        ref={targetRef} 
-        className="info-icon-wrapper"
+    <div className="relative inline-block ml-2">
+      <div
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
+        className="cursor-help"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="h-4 w-4 text-gray-400 hover:text-gray-500 inline-block"
+          viewBox="0 0 20 20" 
+          fill="currentColor"
+        >
+          <path 
+            fillRule="evenodd" 
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" 
+            clipRule="evenodd" 
+          />
         </svg>
-      </span>
-      <Overlay target={targetRef.current} show={show} placement="top">
-        {(props) => (
-          <BSTooltip id={`tooltip-${Math.random()}`} {...props} className="custom-tooltip">
-            {text}
-          </BSTooltip>
-        )}
-      </Overlay>
-    </>
+      </div>
+      {show && (
+        <div
+          ref={tooltipRef}
+          className="absolute z-10 w-48 px-2 py-1 -mt-1 text-sm text-white bg-gray-900 rounded-lg shadow-lg -left-1/2 transform -translate-x-1/2 -translate-y-full"
+        >
+          {text}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
+            <div className="border-8 border-transparent border-t-gray-900"></div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
-// Add a CardTitle component that includes a tooltip
+// Update the CardTitle component to use Tailwind
 const CardTitle = ({ title, tooltip }: { title: string; tooltip?: string }) => {
   return (
-    <h5 className="card-title">
+    <h5 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 flex items-center justify-center">
       {title}
       {tooltip && <Tooltip text={tooltip} />}
     </h5>
@@ -237,7 +246,7 @@ const Dashboard: React.FC = () => {
       setWalletAddress(urlWalletAddress);
       handleWalletLoad(urlWalletAddress);
     }
-  }, [urlWalletAddress]);
+  }, [urlWalletAddress, walletAddress]);
 
   // Separate function to load wallet data
   const handleWalletLoad = async (address: string) => {
@@ -748,58 +757,65 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="container mt-4 mb-5">
+    <div className="container mx-auto px-4 py-8">
       {/* Wallet Address Form */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label htmlFor="walletAddress" className="form-label">Ethereum Wallet Address</label>
-              <div className="wallet-input-container">
-                <input
-                  type="text"
-                  className="form-control"
-                  id="walletAddress"
-                  placeholder="0x..."
-                  value={walletAddress}
-                  onChange={(e) => setWalletAddress(e.target.value)}
-                  required
-                />
-                <button type="submit" className="btn btn-primary ms-2" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                      Loading...
-                    </>
-                  ) : (
-                    'Analyze'
-                  )}
-                </button>
-              </div>
-              <div className="form-text mt-2">
-                Enter an Ethereum wallet address to analyze its HyperLiquid trading activity.
-              </div>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label htmlFor="walletAddress" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Ethereum Wallet Address
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                className="flex-1 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                id="walletAddress"
+                placeholder="0x..."
+                value={walletAddress}
+                onChange={(e) => setWalletAddress(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Loading...
+                  </>
+                ) : (
+                  'Analyze'
+                )}
+              </button>
             </div>
-          </form>
-        </div>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Enter an Ethereum wallet address to analyze its HyperLiquid trading activity.
+            </p>
+          </div>
+        </form>
       </div>
       
       {/* Error Message */}
       {error && (
-        <div className="alert alert-danger mb-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
           {error}
         </div>
       )}
       
-      {/* Current Positions - Moved up as requested */}
+      {/* Current Positions */}
       {hasSubmitted && positions.length > 0 && (
-        <div className="card mb-4">
-          <div className="card-header d-flex justify-content-between align-items-center">
-            <h5 className="card-title mb-0">Current Positions</h5>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg mb-6">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h5 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Current Positions</h5>
           </div>
-          <div className="card-body">
-            <div className="table-responsive">
-              <table className="table table-striped table-hover">
+          <div className="p-6">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead>
                   <tr>
                     <th className="cursor-pointer" onClick={() => sortPositions('asset')}>
@@ -898,24 +914,24 @@ const Dashboard: React.FC = () => {
       
       {/* No Data Message */}
       {!isLoading && hasSubmitted && walletAddress && !error && positions.length === 0 && (
-        <div className="alert alert-info mb-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6">
           No positions found for this wallet. Please check the address and try again.
         </div>
       )}
       
       {/* Dashboard Cards Row */}
-      <div className="dashboard-row">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Account Summary Card */}
         {hasSubmitted && userState && (
-          <div className="dashboard-card account-summary">
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">Account Summary</h2>
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg h-full">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Account Summary</h2>
               </div>
-              <div className="card-body">
-                <div className="summary-container">
+              <div className="p-6">
+                <div className="grid gap-6">
                   {/* Row 1 */}
-                  <div className="summary-row">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
@@ -1149,13 +1165,13 @@ const Dashboard: React.FC = () => {
 
         {/* Risk Metrics Card */}
         {hasSubmitted && riskMetrics && (
-          <div className="dashboard-card risk-metrics">
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">Risk Metrics</h2>
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg h-full">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Risk Metrics</h2>
               </div>
-              <div className="card-body">
-                <div className="risk-metrics-container">
+              <div className="p-6">
+                <div className="grid gap-6">
                   {/* Row 1 */}
                   <div className="risk-metrics-row">
                     <div className="risk-metrics-card">
@@ -1252,47 +1268,47 @@ const Dashboard: React.FC = () => {
         )}
       </div>
       
-      {/* Historical PNL Component - Moved to the bottom */}
+      {/* Historical PNL Component */}
       {hasSubmitted && walletAddress && !error && (
         <HistoricalPnl walletAddress={walletAddress} />
       )}
       
       {/* Initial State Message */}
       {!isLoading && !hasSubmitted && !error && (
-        <div className="card welcome-card">
-          <div className="card-body">
-            <h3 className="text-center mb-4">Enter a wallet address to view risk metrics and positions</h3>
-            <p className="text-center mb-4">This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:</p>
-            <div className="features-grid-container">
-              <div className="features-list">
-                <div className="feature-item">
-                  <div className="feature-icon">📊</div>
-                  <div className="feature-content">
-                    <h4 className="feature-title">PNL Tracking</h4>
-                    <div className="feature-text">Unrealized and realized PNL</div>
-                  </div>
-                </div>
-                <div className="feature-item">
-                  <div className="feature-icon">📈</div>
-                  <div className="feature-content">
-                    <h4 className="feature-title">Position Monitoring</h4>
-                    <div className="feature-text">Current open positions</div>
-                  </div>
-                </div>
-                <div className="feature-item">
-                  <div className="feature-icon">⚖️</div>
-                  <div className="feature-content">
-                    <h4 className="feature-title">Risk Assessment</h4>
-                    <div className="feature-text">Risk metrics for your account</div>
-                  </div>
-                </div>
-                <div className="feature-item">
-                  <div className="feature-icon">🔍</div>
-                  <div className="feature-content">
-                    <h4 className="feature-title">Detailed Analysis</h4>
-                    <div className="feature-text">Position-specific risk analysis</div>
-                  </div>
-                </div>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+          <h3 className="text-2xl font-semibold text-center mb-6 text-gray-900 dark:text-white">
+            Enter a wallet address to view risk metrics and positions
+          </h3>
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+            This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <div className="feature-item">
+              <div className="feature-icon">📊</div>
+              <div className="feature-content">
+                <h4 className="feature-title">PNL Tracking</h4>
+                <div className="feature-text">Unrealized and realized PNL</div>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">📈</div>
+              <div className="feature-content">
+                <h4 className="feature-title">Position Monitoring</h4>
+                <div className="feature-text">Current open positions</div>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">⚖️</div>
+              <div className="feature-content">
+                <h4 className="feature-title">Risk Assessment</h4>
+                <div className="feature-text">Risk metrics for your account</div>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon">🔍</div>
+              <div className="feature-content">
+                <h4 className="feature-title">Detailed Analysis</h4>
+                <div className="feature-text">Position-specific risk analysis</div>
               </div>
             </div>
           </div>

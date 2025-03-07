@@ -11,9 +11,8 @@
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "bootstrap": "^5.3.2",
+    "axios": "^1.6.2",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.9.1",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.0",
     "react-scripts": "5.0.1",
@@ -30,7 +29,11 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-unused-vars": "warn"
+    }
   },
   "browserslist": {
     "production": [
@@ -43,5 +46,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.3.0"
   }
 }

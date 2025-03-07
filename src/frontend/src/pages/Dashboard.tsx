@@ -5,6 +5,7 @@ import '../styles/App.css';
 import { v4 as uuidv4 } from 'uuid';
 import HistoricalPnl from '../components/HistoricalPnl';
 import { Overlay, Tooltip as BSTooltip } from 'react-bootstrap';
+import { API_ENDPOINTS } from '../config/api.config';
 
 // Helper function to format currency values
 const formatCurrency = (
@@ -638,7 +639,7 @@ const Dashboard: React.FC = () => {
     try {
       // Fetch historical PNL data from the API
       const response = await axios.get<ApiResponse<HistoricalPnlData>>(
-        `http://localhost:3001/api/pnl/historical/${walletAddress}`
+        `${API_ENDPOINTS.pnl}/historical/${walletAddress}`
       );
       
       if (response.data.success && response.data.data) {

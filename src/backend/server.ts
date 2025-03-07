@@ -18,7 +18,28 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors(CORS_CONFIG));
+
+// Configure CORS to handle multiple origins
+const corsOptions = {
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = Array.isArray(CORS_CONFIG.origin) 
+      ? CORS_CONFIG.origin 
+      : CORS_CONFIG.origin.split(',');
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: CORS_CONFIG.methods,
+  allowedHeaders: CORS_CONFIG.allowedHeaders
+};
+
+app.use(cors(corsOptions));
 
 // Apply rate limiting to all routes
 app.use(rateLimitMiddleware as express.RequestHandler);

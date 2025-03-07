@@ -30,7 +30,7 @@ export const RATE_LIMIT_CONFIG = {
 
 // CORS configuration
 export const CORS_CONFIG = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: process.env.CORS_ORIGIN || ['http://localhost:3000', 'https://www.hyper-flow.xyz', 'https://hyper-risk-js.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };

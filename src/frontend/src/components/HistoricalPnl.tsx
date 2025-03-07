@@ -296,7 +296,7 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <h5 className="text-xl font-semibold text-gray-900 dark:text-white m-0">Historical PNL by Asset</h5>
         <button 
-          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md"
+          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-md"
           onClick={() => setShowAssetTable(!showAssetTable)}
         >
           {showAssetTable ? 'Hide Details' : 'Show Details'}

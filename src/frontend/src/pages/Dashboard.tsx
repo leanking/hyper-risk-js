@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // import '../styles/App.css'; // Removed to prevent conflicts with Tailwind
@@ -197,16 +197,6 @@ const Tooltip = ({ text }: { text: string }) => {
           </svg>
         </div>
       </div>
-    </div>
-  );
-};
-
-// Update the CardTitle component to use Tailwind
-const CardTitle = ({ title, tooltip }: { title: string; tooltip?: string }) => {
-  return (
-    <div className="flex items-center mb-2">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
-      {tooltip && <Tooltip text={tooltip} />}
     </div>
   );
 };

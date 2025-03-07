@@ -17,7 +17,7 @@ const Footer: React.FC = () => {
             href="https://hyperliquid.xyz" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors text-sm"
+            className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors text-sm"
           >
             Powered by HyperLiquid
           </a>

@@ -6,9 +6,9 @@ const Footer: React.FC = () => {
   
   return (
     <footer className="footer">
-      <div className="container footer-container">
+      <div className="content-container footer-container">
         <div className="footer-text">
-          &copy; {currentYear} Wallet PNL Tracker. All rights reserved.
+          &copy; {currentYear} hyper-flow.xyz. All rights reserved.
         </div>
         <div>
           <a href="https://hyperliquid.xyz" target="_blank" rel="noopener noreferrer" className="footer-link">

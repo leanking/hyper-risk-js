@@ -1,20 +1,82 @@
+/* Add CSS variables for both light and dark themes at the beginning of the file */
+
+:root {
+  /* Light theme variables */
+  --bg-light: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-muted: #6c757d;
+  --card-bg: #ffffff;
+  --card-border: #dee2e6;
+  --border-color: #dee2e6;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --success: #28a745;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --input-bg: #ffffff;
+  --brand-purple: #6a5acd; /* Added brand purple color */
+}
+
+[data-theme="dark"] {
+  /* Dark theme variables */
+  --bg-dark: #212529;
+  --text-primary: #f8f9fa;
+  --text-secondary: #adb5bd;
+  --text-muted: #adb5bd;
+  --card-bg: #343a40;
+  --card-border: #495057;
+  --border-color: #495057;
+  --primary: #0d6efd;
+  --secondary: #6c757d;
+  --success: #28a745;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --input-bg: #2b3035;
+  --brand-purple: #9370db; /* Lighter purple for dark mode */
+}
+
 /* App layout */
 .app {
+  min-height: 100vh;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  align-items: center;
+  width: 100%;
+}
+
+[data-theme="dark"] .app {
+  background-color: var(--bg-dark);
 }
 
 .main-content {
   flex: 1;
   padding: 2rem 0;
+  width: 100%;
+  margin: 0 auto;
+  background-color: var(--bg-light);
+  max-width: 1200px !important;
+}
+
+[data-theme="dark"] .main-content {
+  background-color: var(--bg-dark);
+}
+
+/* Container for the actual content */
+.content-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
 }
 
 /* Header */
 .header {
-  background-color: var(--header-bg);
+  background-color: var(--bg-light);
   box-shadow: 0 2px 4px var(--shadow-color);
   padding: 1rem 0;
+  width: 100%;
 }
 
 .header-container {
@@ -24,10 +86,22 @@
 }
 
 .logo {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: var(--link-color);
+  color: #6a5acd !important; /* SlateBlue - direct color value with !important */
   text-decoration: none;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .logo {
+  color: #9370db !important; /* MediumPurple - lighter shade for dark mode */
 }
 
 .nav-menu {
@@ -60,9 +134,10 @@
 
 /* Footer */
 .footer {
-  background-color: var(--footer-bg);
+  background-color: var(--bg-light);
   padding: 1.5rem 0;
   border-top: 1px solid var(--border-color);
+  width: 100%;
 }
 
 .footer-container {
@@ -187,7 +262,25 @@
   padding-left: 15px;
   margin-right: auto;
   margin-left: auto;
-  max-width: 1140px;
+  max-width: 1200px !important;
+}
+
+/* Fix container width */
+.container, 
+.container-fluid,
+.container-lg,
+.container-md,
+.container-sm,
+.container-xl,
+.container-xxl {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+}
+
+/* Ensure main content has proper width */
+.main-content {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
 }
 
 /* Utilities */
@@ -672,4 +765,389 @@
   text-align: center;
   overflow: hidden;
   width: 100%;
+}
+
+/* Bootstrap tooltip customization */
+.info-icon-wrapper {
+  display: inline-flex;
+  margin-left: 5px;
+  color: var(--text-muted, #6c757d);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.info-icon-wrapper:hover {
+  color: var(--primary, #007bff);
+}
+
+.info-icon-wrapper svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Custom Bootstrap tooltip styling */
+.custom-tooltip.tooltip {
+  opacity: 1 !important;
+}
+
+.custom-tooltip .tooltip-inner {
+  background-color: #333;
+  color: white;
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 250px;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.custom-tooltip .tooltip-arrow::before {
+  border-top-color: #333;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .custom-tooltip .tooltip-inner {
+  background-color: #555;
+}
+
+[data-theme="dark"] .custom-tooltip .tooltip-arrow::before {
+  border-top-color: #555;
+}
+
+/* Add these styles at the end of the file to override Bootstrap's default styles for dark mode */
+
+/* Dark mode overrides for Bootstrap */
+[data-theme="dark"] {
+  --bs-body-bg: var(--bg-dark);
+  --bs-body-color: var(--text-primary);
+}
+
+[data-theme="dark"] .card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+[data-theme="dark"] .card-header {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
+
+[data-theme="dark"] .card-body {
+  background-color: var(--card-bg);
+}
+
+[data-theme="dark"] .table {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .form-control {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+[data-theme="dark"] .btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+[data-theme="dark"] .btn-secondary {
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+}
+
+/* Apply background color to html and body to avoid white flashes */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--bg-light);
+  transition: background-color 0.3s ease;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] html {
+  background-color: var(--bg-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Override Bootstrap's background */
+[data-theme="dark"] .bg-light {
+  background-color: var(--bg-dark) !important;
+}
+
+[data-theme="dark"] .bg-white {
+  background-color: var(--card-bg) !important;
+}
+
+/* Override Bootstrap container */
+[data-theme="dark"] .container,
+[data-theme="dark"] .container-fluid,
+[data-theme="dark"] .container-lg,
+[data-theme="dark"] .container-md,
+[data-theme="dark"] .container-sm,
+[data-theme="dark"] .container-xl,
+[data-theme="dark"] .container-xxl {
+  background-color: var(--bg-dark) !important;
+  max-width: 1200px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  width: 100% !important;
+}
+
+/* Force dark background on all major elements */
+[data-theme="dark"] #root,
+[data-theme="dark"] .app,
+[data-theme="dark"] main,
+[data-theme="dark"] .main-content,
+[data-theme="dark"] .dashboard-row {
+  background-color: var(--bg-dark) !important;
+}
+
+/* Add these styles to fix the white areas at the top and bottom of the page */
+
+/* Fix the white strip at the top and bottom */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg-light);
+}
+
+[data-theme="dark"] body {
+  background-color: var(--bg-dark) !important;
+}
+
+/* Ensure the app container takes full height */
+#root {
+  min-height: 100vh;
+  background-color: var(--bg-light);
+}
+
+[data-theme="dark"] #root {
+  background-color: var(--bg-dark) !important;
+}
+
+/* Fix the footer area */
+.footer {
+  background-color: var(--bg-light);
+  width: 100%;
+}
+
+[data-theme="dark"] .footer {
+  background-color: var(--bg-dark) !important;
+  color: var(--text-primary);
+}
+
+/* Fix any potential Bootstrap container issues */
+[data-theme="dark"] .container-fluid,
+[data-theme="dark"] .container {
+  background-color: var(--bg-dark) !important;
+  max-width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Ensure header and footer containers have proper padding in dark mode */
+[data-theme="dark"] .content-container.header-container,
+[data-theme="dark"] .content-container.footer-container {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* Fix the white strips at the top and bottom */
+body::before,
+body::after {
+  content: "";
+  display: block;
+  height: 0;
+  width: 100%;
+}
+
+[data-theme="dark"] body::before,
+[data-theme="dark"] body::after {
+  background-color: var(--bg-dark) !important;
+}
+
+/* Fix the header area */
+.header {
+  background-color: var(--bg-light);
+  width: 100%;
+}
+
+[data-theme="dark"] .header {
+  background-color: var(--bg-dark) !important;
+}
+
+/* Add these styles to fix the Bootstrap navbar */
+[data-theme="dark"] .navbar,
+[data-theme="dark"] .navbar-expand,
+[data-theme="dark"] .navbar-light,
+[data-theme="dark"] .bg-light,
+[data-theme="dark"] .navbar-collapse,
+[data-theme="dark"] .navbar-nav {
+  background-color: var(--bg-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Fix any remaining white areas */
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-body,
+[data-theme="dark"] .bg-body-tertiary {
+  background-color: var(--bg-dark) !important;
+}
+
+/* Ensure the app has proper dimensions */
+.app {
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Fix the dashboard row width */
+.dashboard-row {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Add this at the very end of the file to ensure it overrides everything else */
+
+/* Force dark background on the entire page */
+[data-theme="dark"] {
+  background-color: var(--bg-dark) !important;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] html,
+[data-theme="dark"] #root,
+[data-theme="dark"] .app,
+[data-theme="dark"] .main-content,
+[data-theme="dark"] .header,
+[data-theme="dark"] .footer,
+[data-theme="dark"] .container,
+[data-theme="dark"] .container-fluid,
+[data-theme="dark"] .row,
+[data-theme="dark"] .col,
+[data-theme="dark"] .card,
+[data-theme="dark"] .navbar {
+  background-color: var(--bg-dark) !important;
+}
+
+/* Remove any borders that might create white lines */
+[data-theme="dark"] * {
+  border-color: var(--card-border) !important;
+}
+
+/* Fix text color in dark mode */
+[data-theme="dark"] {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] span,
+[data-theme="dark"] div,
+[data-theme="dark"] a,
+[data-theme="dark"] label,
+[data-theme="dark"] input,
+[data-theme="dark"] button,
+[data-theme="dark"] .card-title,
+[data-theme="dark"] .card-text {
+  color: var(--text-primary) !important;
+}
+
+/* Ensure card text is visible */
+[data-theme="dark"] .card-text,
+[data-theme="dark"] .card-title {
+  color: var(--text-primary) !important;
+}
+
+/* Fix specific text colors for success, warning, danger */
+[data-theme="dark"] .text-success {
+  color: var(--success) !important;
+}
+
+[data-theme="dark"] .text-warning {
+  color: var(--warning) !important;
+}
+
+[data-theme="dark"] .text-danger {
+  color: var(--danger) !important;
+}
+
+/* Add styles for the Historical PNL card */
+.historical-pnl-card {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+.historical-pnl-card .card-header {
+  padding: 1rem;
+}
+
+.historical-pnl-card .card-body {
+  padding: 1rem;
+}
+
+.historical-pnl-card .table {
+  margin-bottom: 0;
+}
+
+.historical-pnl-card .table th,
+.historical-pnl-card .table td {
+  padding: 0.75rem 1rem;
+}
+
+/* Fix the message when no assets are found */
+.historical-pnl-card .alert {
+  margin: 1rem;
+}
+
+/* Fix colored text in Account Summary and Risk Metrics */
+.card-text[style*="color"] {
+  color: inherit !important;
+}
+
+/* Restore specific color styles */
+.card-text[style*="color: #28a745"] {
+  color: #28a745 !important;
+}
+
+.card-text[style*="color: #ffc107"] {
+  color: #ffc107 !important;
+}
+
+.card-text[style*="color: #dc3545"] {
+  color: #dc3545 !important;
+}
+
+/* Ensure these colors work in dark mode too */
+[data-theme="dark"] .card-text[style*="color: #28a745"] {
+  color: #28a745 !important;
+}
+
+[data-theme="dark"] .card-text[style*="color: #ffc107"] {
+  color: #ffc107 !important;
+}
+
+[data-theme="dark"] .card-text[style*="color: #dc3545"] {
+  color: #dc3545 !important;
 } 

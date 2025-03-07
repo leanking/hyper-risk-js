@@ -95,3 +95,463 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Table styling for consistency */
+.table {
+  color: var(--text-color);
+  border-color: var(--table-border);
+}
+
+.table td, .table th {
+  color: var(--text-color);
+}
+
+.table thead th {
+  background-color: var(--table-header-bg);
+  color: var(--text-color);
+  border-bottom: 2px solid var(--table-border);
+  font-weight: 600;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--table-stripe);
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--table-hover);
+  color: var(--text-color);
+}
+
+.table-hover tbody tr:hover td {
+  color: var(--text-color);
+}
+
+/* Ensure text colors work in both themes - with higher specificity */
+.theme-dark .table,
+.theme-dark .table tbody tr td,
+.theme-dark .table thead th,
+.theme-dark .table tbody tr th {
+  color: #ffffff !important;
+}
+
+.theme-dark .text-success {
+  color: #2ecc71 !important;
+}
+
+.theme-dark .text-danger {
+  color: #ff6b6b !important;
+}
+
+/* Force dark mode text colors for all table elements */
+body.theme-dark .table * {
+  color: #ffffff !important;
+}
+
+body.theme-dark .table .text-success {
+  color: #2ecc71 !important;
+}
+
+body.theme-dark .table .text-danger {
+  color: #ff6b6b !important;
+}
+
+/* Card styling consistency */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.25rem var(--shadow-color);
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.card-header {
+  padding: 0.75rem 1.25rem;
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.card-title {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+/* Consistent badge styling */
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+}
+
+.badge.bg-primary {
+  color: white;
+}
+
+.badge.bg-warning {
+  color: #212529;
+}
+
+.theme-dark .badge.bg-warning {
+  color: #212529;
+}
+
+.theme-light .badge.bg-warning {
+  color: #212529;
+}
+
+/* Cursor pointer for sortable columns */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Consistent text colors */
+.text-success {
+  color: #198754 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Light theme styles */
+.theme-light .table,
+.theme-light .table tbody tr td,
+.theme-light .table thead th,
+.theme-light .table tbody tr th {
+  color: #212529;
+}
+
+.theme-light .text-success {
+  color: #198754 !important;
+}
+
+.theme-light .text-danger {
+  color: #dc3545 !important;
+}
+
+/* Direct styling for table cells in dark mode */
+.theme-dark table {
+  color: #ffffff !important;
+}
+
+.theme-dark table td,
+.theme-dark table th {
+  color: #ffffff !important;
+}
+
+.theme-dark table tr {
+  color: #ffffff !important;
+}
+
+/* Override Bootstrap's default text color in dark mode */
+.theme-dark .table-striped>tbody>tr:nth-of-type(odd)>* {
+  color: #ffffff !important;
+}
+
+.theme-dark .table-hover>tbody>tr:hover>* {
+  color: #ffffff !important;
+}
+
+/* Specific styling for the Current Positions and Historical PNL tables */
+.theme-dark .card-header h5.card-title {
+  color: #ffffff !important;
+}
+
+/* Make sure Historical PNL table text is white in dark mode */
+.theme-dark .historical-pnl-card table td,
+.theme-dark .historical-pnl-card table th {
+  color: #ffffff !important;
+}
+
+/* Make sure Current Positions table text is white in dark mode */
+.theme-dark .table td,
+.theme-dark .table th,
+.theme-dark .table tbody tr td,
+.theme-dark .table thead th {
+  color: #ffffff !important;
+}
+
+/* Target table headers specifically */
+.theme-dark thead tr th {
+  color: #ffffff !important;
+}
+
+/* Target table cells specifically */
+.theme-dark tbody tr td {
+  color: #ffffff !important;
+}
+
+/* Ensure strong tags in tables are visible in dark mode */
+.theme-dark table strong {
+  color: #ffffff !important;
+}
+
+/* Ensure all text in tables is visible regardless of nesting */
+.theme-dark .table * {
+  color: #ffffff !important;
+}
+
+/* But preserve success and danger colors */
+.theme-dark .table .text-success,
+.theme-dark .table .text-success * {
+  color: #2ecc71 !important;
+}
+
+.theme-dark .table .text-danger,
+.theme-dark .table .text-danger * {
+  color: #ff6b6b !important;
+}
+
+/* Additional specific selectors for table headers in dark mode */
+html body.theme-dark table thead tr th {
+  color: #ffffff !important;
+}
+
+/* Additional specific selectors for table cells in dark mode */
+html body.theme-dark table tbody tr td {
+  color: #ffffff !important;
+}
+
+/* Target the specific tables shown in the screenshot */
+html body.theme-dark .card table {
+  color: #ffffff !important;
+}
+
+html body.theme-dark .card table thead th {
+  color: #ffffff !important;
+}
+
+html body.theme-dark .card table tbody td {
+  color: #ffffff !important;
+}
+
+/* Additional high-specificity selectors for dark mode tables */
+html[data-theme="dark"] table,
+html[data-theme="dark"] table thead,
+html[data-theme="dark"] table tbody,
+html[data-theme="dark"] table tr,
+html[data-theme="dark"] table th,
+html[data-theme="dark"] table td,
+html[data-theme="dark"] .table,
+html[data-theme="dark"] .table thead,
+html[data-theme="dark"] .table tbody,
+html[data-theme="dark"] .table tr,
+html[data-theme="dark"] .table th,
+html[data-theme="dark"] .table td {
+  color: #ffffff !important;
+}
+
+/* Target both theme-dark class and data-theme attribute */
+.theme-dark table,
+.theme-dark .table,
+.dark-theme table,
+.dark-theme .table,
+body.theme-dark table,
+body.theme-dark .table,
+body.dark-theme table,
+body.dark-theme .table,
+html[data-theme="dark"] table,
+html[data-theme="dark"] .table {
+  color: #ffffff !important;
+}
+
+/* Target table headers with maximum specificity */
+html[data-theme="dark"] table thead tr th,
+html[data-theme="dark"] .table thead tr th,
+.theme-dark table thead tr th,
+.theme-dark .table thead tr th,
+.dark-theme table thead tr th,
+.dark-theme .table thead tr th,
+body.theme-dark table thead tr th,
+body.theme-dark .table thead tr th,
+body.dark-theme table thead tr th,
+body.dark-theme .table thead tr th {
+  color: #ffffff !important;
+}
+
+/* Target table cells with maximum specificity */
+html[data-theme="dark"] table tbody tr td,
+html[data-theme="dark"] .table tbody tr td,
+.theme-dark table tbody tr td,
+.theme-dark .table tbody tr td,
+.dark-theme table tbody tr td,
+.dark-theme .table tbody tr td,
+body.theme-dark table tbody tr td,
+body.theme-dark .table tbody tr td,
+body.dark-theme table tbody tr td,
+body.dark-theme .table tbody tr td {
+  color: #ffffff !important;
+}
+
+/* Target the specific tables shown in the screenshot with maximum specificity */
+html[data-theme="dark"] .card table,
+html[data-theme="dark"] .card .table,
+.theme-dark .card table,
+.theme-dark .card .table,
+.dark-theme .card table,
+.dark-theme .card .table,
+body.theme-dark .card table,
+body.theme-dark .card .table,
+body.dark-theme .card table,
+body.dark-theme .card .table {
+  color: #ffffff !important;
+}
+
+/* Target table headers in cards with maximum specificity */
+html[data-theme="dark"] .card table thead tr th,
+html[data-theme="dark"] .card .table thead tr th,
+.theme-dark .card table thead tr th,
+.theme-dark .card .table thead tr th,
+.dark-theme .card table thead tr th,
+.dark-theme .card .table thead tr th,
+body.theme-dark .card table thead tr th,
+body.theme-dark .card .table thead tr th,
+body.dark-theme .card table thead tr th,
+body.dark-theme .card .table thead tr th {
+  color: #ffffff !important;
+}
+
+/* Target table cells in cards with maximum specificity */
+html[data-theme="dark"] .card table tbody tr td,
+html[data-theme="dark"] .card .table tbody tr td,
+.theme-dark .card table tbody tr td,
+.theme-dark .card .table tbody tr td,
+.dark-theme .card table tbody tr td,
+.dark-theme .card .table tbody tr td,
+body.theme-dark .card table tbody tr td,
+body.theme-dark .card .table tbody tr td,
+body.dark-theme .card table tbody tr td,
+body.dark-theme .card .table tbody tr td {
+  color: #ffffff !important;
+}
+
+/* Preserve success and danger colors with maximum specificity */
+html[data-theme="dark"] .table .text-success,
+html[data-theme="dark"] .table .text-success *,
+.theme-dark .table .text-success,
+.theme-dark .table .text-success *,
+.dark-theme .table .text-success,
+.dark-theme .table .text-success * {
+  color: #2ecc71 !important;
+}
+
+html[data-theme="dark"] .table .text-danger,
+html[data-theme="dark"] .table .text-danger *,
+.theme-dark .table .text-danger,
+.theme-dark .table .text-danger *,
+.dark-theme .table .text-danger,
+.dark-theme .table .text-danger * {
+  color: #ff6b6b !important;
+}
+
+/* Direct Bootstrap overrides for dark mode tables */
+.theme-dark .table,
+.dark-theme .table,
+body.theme-dark .table,
+body.dark-theme .table,
+html[data-theme="dark"] .table {
+  --bs-table-color: #ffffff !important;
+  --bs-table-bg: transparent !important;
+  --bs-table-border-color: var(--table-border) !important;
+  color: #ffffff !important;
+}
+
+.theme-dark .table-striped > tbody > tr:nth-of-type(odd),
+.dark-theme .table-striped > tbody > tr:nth-of-type(odd),
+body.theme-dark .table-striped > tbody > tr:nth-of-type(odd),
+body.dark-theme .table-striped > tbody > tr:nth-of-type(odd),
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) {
+  --bs-table-accent-bg: var(--table-stripe) !important;
+  color: #ffffff !important;
+}
+
+.theme-dark .table-striped > tbody > tr:nth-of-type(odd) > *,
+.dark-theme .table-striped > tbody > tr:nth-of-type(odd) > *,
+body.theme-dark .table-striped > tbody > tr:nth-of-type(odd) > *,
+body.dark-theme .table-striped > tbody > tr:nth-of-type(odd) > *,
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: var(--table-stripe) !important;
+  color: #ffffff !important;
+}
+
+/* Force all table text to be white in dark mode */
+.theme-dark .table *:not(.text-success):not(.text-danger),
+.dark-theme .table *:not(.text-success):not(.text-danger),
+body.theme-dark .table *:not(.text-success):not(.text-danger),
+body.dark-theme .table *:not(.text-success):not(.text-danger),
+html[data-theme="dark"] .table *:not(.text-success):not(.text-danger) {
+  color: #ffffff !important;
+}
+
+/* Target the Asset column specifically */
+.theme-dark .table th:first-child,
+.theme-dark .table td:first-child,
+.dark-theme .table th:first-child,
+.dark-theme .table td:first-child,
+body.theme-dark .table th:first-child,
+body.theme-dark .table td:first-child,
+body.dark-theme .table th:first-child,
+body.dark-theme .table td:first-child,
+html[data-theme="dark"] .table th:first-child,
+html[data-theme="dark"] .table td:first-child {
+  color: #ffffff !important;
+}
+
+/* Target the Asset column text specifically */
+.theme-dark .table td:first-child strong,
+.dark-theme .table td:first-child strong,
+body.theme-dark .table td:first-child strong,
+body.dark-theme .table td:first-child strong,
+html[data-theme="dark"] .table td:first-child strong {
+  color: #ffffff !important;
+}
+
+/* Fix table headers in dark mode - ensure dark background with white text */
+.theme-dark .table thead th,
+.dark-theme .table thead th,
+body.theme-dark .table thead th,
+body.dark-theme .table thead th,
+html[data-theme="dark"] .table thead th {
+  background-color: #2d2d2d !important;
+  color: #ffffff !important;
+  border-color: #444444 !important;
+}
+
+.theme-dark table thead th,
+.dark-theme table thead th,
+body.theme-dark table thead th,
+body.dark-theme table thead th,
+html[data-theme="dark"] table thead th {
+  background-color: #2d2d2d !important;
+  color: #ffffff !important;
+  border-color: #444444 !important;
+}
+
+/* Fix table header background in cards */
+.theme-dark .card .table thead th,
+.dark-theme .card .table thead th,
+body.theme-dark .card .table thead th,
+body.dark-theme .card .table thead th,
+html[data-theme="dark"] .card .table thead th {
+  background-color: #2d2d2d !important;
+  color: #ffffff !important;
+  border-color: #444444 !important;
+}
+
+/* Fix table striping in dark mode */
+.theme-dark .table-striped > tbody > tr:nth-of-type(odd),
+.dark-theme .table-striped > tbody > tr:nth-of-type(odd),
+body.theme-dark .table-striped > tbody > tr:nth-of-type(odd),
+body.dark-theme .table-striped > tbody > tr:nth-of-type(odd),
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.theme-dark .table-striped > tbody > tr:nth-of-type(even),
+.dark-theme .table-striped > tbody > tr:nth-of-type(even),
+body.theme-dark .table-striped > tbody > tr:nth-of-type(even),
+body.dark-theme .table-striped > tbody > tr:nth-of-type(even),
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(even) {
+  background-color: transparent !important;
+}

@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/App.css';
 import { v4 as uuidv4 } from 'uuid';
 import HistoricalPnl from '../components/HistoricalPnl';
+import { Overlay, Tooltip as BSTooltip } from 'react-bootstrap';
 
 // Helper function to format currency values
 const formatCurrency = (
@@ -161,6 +163,45 @@ interface ApiResponse<T> {
   timestamp: Date;
 }
 
+// React Bootstrap Tooltip component
+const Tooltip = ({ text }: { text: string }) => {
+  const [show, setShow] = useState(false);
+  const targetRef = useRef(null);
+
+  return (
+    <>
+      <span 
+        ref={targetRef} 
+        className="info-icon-wrapper"
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+        </svg>
+      </span>
+      <Overlay target={targetRef.current} show={show} placement="top">
+        {(props) => (
+          <BSTooltip id={`tooltip-${Math.random()}`} {...props} className="custom-tooltip">
+            {text}
+          </BSTooltip>
+        )}
+      </Overlay>
+    </>
+  );
+};
+
+// Add a CardTitle component that includes a tooltip
+const CardTitle = ({ title, tooltip }: { title: string; tooltip?: string }) => {
+  return (
+    <h5 className="card-title">
+      {title}
+      {tooltip && <Tooltip text={tooltip} />}
+    </h5>
+  );
+};
+
 const Dashboard: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -182,6 +223,9 @@ const Dashboard: React.FC = () => {
   const [pnlError, setPnlError] = useState<string | null>(null);
   // Add state to track if form has been submitted
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
+  // Add state for sorting positions
+  const [positionSortColumn, setPositionSortColumn] = useState<string>('asset');
+  const [positionSortDirection, setPositionSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -621,6 +665,62 @@ const Dashboard: React.FC = () => {
     }
   }, [walletAddress, hasSubmitted, fetchHistoricalPnl]);
 
+  // Function to sort positions
+  const sortPositions = (column: string) => {
+    const newDirection = positionSortColumn === column && positionSortDirection === 'asc' ? 'desc' : 'asc';
+    setPositionSortColumn(column);
+    setPositionSortDirection(newDirection);
+    
+    const sortedPositions = [...positions].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (column) {
+        case 'asset':
+          comparison = a.asset.localeCompare(b.asset);
+          break;
+        case 'side':
+          comparison = a.side.localeCompare(b.side);
+          break;
+        case 'quantity':
+          comparison = parseFloat(a.quantity) - parseFloat(b.quantity);
+          break;
+        case 'positionSize':
+          const aSize = parseFloat(a.quantity) * parseFloat(a.currentPrice);
+          const bSize = parseFloat(b.quantity) * parseFloat(b.currentPrice);
+          comparison = aSize - bSize;
+          break;
+        case 'entryPrice':
+          comparison = parseFloat(a.entryPrice) - parseFloat(b.entryPrice);
+          break;
+        case 'currentPrice':
+          comparison = parseFloat(a.currentPrice) - parseFloat(b.currentPrice);
+          break;
+        case 'unrealizedPnl':
+          const aPnl = a.unrealizedPnl ? parseFloat(a.unrealizedPnl) : 0;
+          const bPnl = b.unrealizedPnl ? parseFloat(b.unrealizedPnl) : 0;
+          comparison = aPnl - bPnl;
+          break;
+        default:
+          comparison = 0;
+      }
+      
+      return newDirection === 'asc' ? comparison : -comparison;
+    });
+    
+    setPositions(sortedPositions);
+  };
+  
+  // Render sort indicator
+  const renderSortIndicator = (column: string) => {
+    if (positionSortColumn !== column) return null;
+    
+    return (
+      <span className="ms-1">
+        {positionSortDirection === 'asc' ? '▲' : '▼'}
+      </span>
+    );
+  };
+
   return (
     <div className="container mt-4 mb-5">
       {/* Wallet Address Form */}
@@ -668,22 +768,36 @@ const Dashboard: React.FC = () => {
       {/* Current Positions - Moved up as requested */}
       {hasSubmitted && positions.length > 0 && (
         <div className="card mb-4">
-          <div className="card-header">
-            <h2 className="card-title">Current Positions</h2>
+          <div className="card-header d-flex justify-content-between align-items-center">
+            <h5 className="card-title mb-0">Current Positions</h5>
           </div>
           <div className="card-body">
             <div className="table-responsive">
               <table className="table table-striped table-hover">
                 <thead>
                   <tr>
-                    <th>Asset</th>
-                    <th>Side</th>
+                    <th className="cursor-pointer" onClick={() => sortPositions('asset')}>
+                      Asset {renderSortIndicator('asset')}
+                    </th>
+                    <th className="cursor-pointer" onClick={() => sortPositions('side')}>
+                      Side {renderSortIndicator('side')}
+                    </th>
                     <th>Margin Type</th>
-                    <th>Quantity</th>
-                    <th>Position Size</th>
-                    <th>Entry Price</th>
-                    <th>Current Price</th>
-                    <th>Unrealized PNL</th>
+                    <th className="cursor-pointer" onClick={() => sortPositions('quantity')}>
+                      Quantity {renderSortIndicator('quantity')}
+                    </th>
+                    <th className="cursor-pointer" onClick={() => sortPositions('positionSize')}>
+                      Position Size {renderSortIndicator('positionSize')}
+                    </th>
+                    <th className="cursor-pointer" onClick={() => sortPositions('entryPrice')}>
+                      Entry Price {renderSortIndicator('entryPrice')}
+                    </th>
+                    <th className="cursor-pointer" onClick={() => sortPositions('currentPrice')}>
+                      Current Price {renderSortIndicator('currentPrice')}
+                    </th>
+                    <th className="cursor-pointer" onClick={() => sortPositions('unrealizedPnl')}>
+                      Unrealized PNL {renderSortIndicator('unrealizedPnl')}
+                    </th>
                     <th>Risk Score</th>
                   </tr>
                 </thead>
@@ -779,8 +893,10 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Account Value</h5>
-                          <p className="card-text">
+                          <CardTitle 
+                            title="Account Value" 
+                          />
+                          <p className="card-text value-text">
                             {formatCurrency(userState.crossMarginSummary.accountValue)}
                           </p>
                         </div>
@@ -790,8 +906,11 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Margin Usage</h5>
-                          <p className="card-text" style={{ color: (() => {
+                          <CardTitle 
+                            title="Margin Usage" 
+                            tooltip="The percentage of your account value being used as margin. Lower values indicate less risk."
+                          />
+                          <p className={`card-text ${(() => {
                             // Check if crossMarginSummary exists
                             if (!userState.crossMarginSummary) {
                               return '';
@@ -801,7 +920,7 @@ const Dashboard: React.FC = () => {
                             if (userState.crossMarginSummary.totalMarginUsedRatio) {
                               const ratio = parseFloat(userState.crossMarginSummary.totalMarginUsedRatio);
                               if (isNaN(ratio)) return '';
-                              return ratio < 0.3 ? '#28a745' : ratio < 0.7 ? '#ffc107' : '#dc3545';
+                              return ratio < 0.3 ? 'text-success' : ratio < 0.7 ? 'text-warning' : 'text-danger';
                             }
                             
                             // Calculate from totalMarginUsed and accountValue if available
@@ -811,12 +930,12 @@ const Dashboard: React.FC = () => {
                               const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
                               if (!isNaN(marginUsed) && !isNaN(accountValue) && accountValue > 0) {
                                 const ratio = marginUsed / accountValue;
-                                return ratio < 0.3 ? '#28a745' : ratio < 0.7 ? '#ffc107' : '#dc3545';
+                                return ratio < 0.3 ? 'text-success' : ratio < 0.7 ? 'text-warning' : 'text-danger';
                               }
                             }
                             
                             return '';
-                          })() }}>
+                          })()}`}>
                             {(() => {
                               // Check if crossMarginSummary exists
                               if (!userState.crossMarginSummary) {
@@ -849,8 +968,11 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Maintenance Margin Ratio</h5>
-                          <p className="card-text" style={{ color: (() => {
+                          <CardTitle 
+                            title="Maintenance Margin Ratio" 
+                            tooltip="The ratio of maintenance margin to account value. If this exceeds 100%, your positions may be liquidated."
+                          />
+                          <p className={`card-text ${(() => {
                             // Check if crossMarginSummary exists
                             if (!userState.crossMarginSummary) {
                               return '';
@@ -860,7 +982,7 @@ const Dashboard: React.FC = () => {
                             if (userState.crossMarginSummary.totalMmRatio) {
                               const ratio = parseFloat(userState.crossMarginSummary.totalMmRatio);
                               if (isNaN(ratio)) return '';
-                              return ratio < 0.1 ? '#28a745' : ratio < 0.2 ? '#ffc107' : '#dc3545';
+                              return ratio < 0.1 ? 'text-success' : ratio < 0.2 ? 'text-warning' : 'text-danger';
                             }
                             
                             // Calculate from totalMm and accountValue if available
@@ -870,12 +992,12 @@ const Dashboard: React.FC = () => {
                               const accountValue = parseFloat(userState.crossMarginSummary.accountValue);
                               if (!isNaN(totalMm) && !isNaN(accountValue) && accountValue > 0) {
                                 const ratio = totalMm / accountValue;
-                                return ratio < 0.1 ? '#28a745' : ratio < 0.2 ? '#ffc107' : '#dc3545';
+                                return ratio < 0.1 ? 'text-success' : ratio < 0.2 ? 'text-warning' : 'text-danger';
                               }
                             }
                             
                             return '';
-                          })() }}>
+                          })()}`}>
                             {(() => {
                               // Check if crossMarginSummary exists
                               if (!userState.crossMarginSummary) {
@@ -911,8 +1033,10 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Unrealized PNL</h5>
-                          <p className="card-text" style={{ color: parseFloat(unrealizedPnl) >= 0 ? '#28a745' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Unrealized PNL" 
+                          />
+                          <p className={`card-text ${parseFloat(unrealizedPnl) >= 0 ? 'text-success' : 'text-danger'}`}>
                             {formatCurrency(unrealizedPnl)}
                           </p>
                         </div>
@@ -922,8 +1046,11 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Total Realized PNL</h5>
-                          <p className="card-text" style={{ color: (pnlData?.metrics?.totalRealizedPnl || 0) >= 0 ? '#28a745' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Total Realized PNL" 
+                            tooltip="The sum of all profits and losses from closed positions."
+                          />
+                          <p className={`card-text ${(pnlData?.metrics?.totalRealizedPnl || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
                             {formatCurrency(pnlData?.metrics?.totalRealizedPnl || 0)}
                           </p>
                         </div>
@@ -933,8 +1060,10 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Total Fees</h5>
-                          <p className="card-text" style={{ color: '#dc3545' }}>
+                          <CardTitle 
+                            title="Total Fees" 
+                          />
+                          <p className="card-text text-danger">
                             {formatCurrency(pnlData?.metrics?.totalFees || 0)}
                           </p>
                         </div>
@@ -947,8 +1076,11 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Net PNL</h5>
-                          <p className="card-text" style={{ color: (pnlData?.metrics?.netPnl || 0) >= 0 ? '#28a745' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Net PNL" 
+                            tooltip="Total profit or loss after subtracting fees from realized PNL."
+                          />
+                          <p className={`card-text ${(pnlData?.metrics?.netPnl || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
                             {formatCurrency(pnlData?.metrics?.netPnl || 0)}
                           </p>
                         </div>
@@ -958,13 +1090,13 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Win Rate</h5>
-                          <p className="card-text" style={{ color: (pnlData?.metrics?.winRate || 0) >= 50 ? '#28a745' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Win Rate" 
+                            tooltip={`${pnlData?.metrics?.profitableTrades || 0} wins / ${pnlData?.metrics?.unprofitableTrades || 0} losses`}
+                          />
+                          <p className={`card-text ${(pnlData?.metrics?.winRate || 0) >= 50 ? 'text-success' : 'text-danger'}`}>
                             {(pnlData?.metrics?.winRate || 0).toFixed(2)}%
                           </p>
-                          <small className="text-muted win-rate-details">
-                            {pnlData?.metrics?.profitableTrades || 0} wins / {pnlData?.metrics?.unprofitableTrades || 0} losses
-                          </small>
                         </div>
                       </div>
                     </div>
@@ -972,13 +1104,13 @@ const Dashboard: React.FC = () => {
                     <div className="summary-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Total PNL</h5>
-                          <p className="card-text" style={{ color: ((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl)) >= 0 ? '#28a745' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Total PNL" 
+                            tooltip="Realized + Unrealized PNL combined"
+                          />
+                          <p className={`card-text ${((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl)) >= 0 ? 'text-success' : 'text-danger'}`}>
                             {formatCurrency((pnlData?.metrics?.netPnl || 0) + parseFloat(unrealizedPnl))}
                           </p>
-                          <small className="text-muted total-pnl-details">
-                            Realized + Unrealized
-                          </small>
                         </div>
                       </div>
                     </div>
@@ -1003,8 +1135,11 @@ const Dashboard: React.FC = () => {
                     <div className="risk-metrics-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Volatility</h5>
-                          <p className="card-text" style={{ color: parseFloat(riskMetrics.volatility) < 20 ? '#28a745' : parseFloat(riskMetrics.volatility) < 40 ? '#ffc107' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Volatility" 
+                            tooltip="Measures the variation in your portfolio's returns over time. Higher volatility indicates higher risk."
+                          />
+                          <p className={`card-text ${parseFloat(riskMetrics.volatility) < 20 ? 'text-success' : parseFloat(riskMetrics.volatility) < 40 ? 'text-warning' : 'text-danger'}`}>
                             {parseFloat(riskMetrics.volatility).toFixed(2)}%
                           </p>
                         </div>
@@ -1013,8 +1148,11 @@ const Dashboard: React.FC = () => {
                     <div className="risk-metrics-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Max Drawdown</h5>
-                          <p className="card-text" style={{ color: parseFloat(riskMetrics.drawdown) < 15 ? '#28a745' : parseFloat(riskMetrics.drawdown) < 30 ? '#ffc107' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Max Drawdown" 
+                            tooltip="The largest percentage drop from a peak to a trough in your account value. Measures downside risk."
+                          />
+                          <p className={`card-text ${parseFloat(riskMetrics.drawdown) < 15 ? 'text-success' : parseFloat(riskMetrics.drawdown) < 30 ? 'text-warning' : 'text-danger'}`}>
                             {parseFloat(riskMetrics.drawdown).toFixed(2)}%
                           </p>
                         </div>
@@ -1027,8 +1165,11 @@ const Dashboard: React.FC = () => {
                     <div className="risk-metrics-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Value at Risk (VaR)</h5>
-                          <p className="card-text" style={{ color: parseFloat(riskMetrics.valueAtRisk) < 500 ? '#28a745' : parseFloat(riskMetrics.valueAtRisk) < 1000 ? '#ffc107' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Value at Risk (VaR)" 
+                            tooltip="The maximum potential loss expected with 95% confidence over a one-day period."
+                          />
+                          <p className={`card-text ${parseFloat(riskMetrics.valueAtRisk) < 500 ? 'text-success' : parseFloat(riskMetrics.valueAtRisk) < 1000 ? 'text-warning' : 'text-danger'}`}>
                             {formatCurrency(riskMetrics.valueAtRisk)}
                           </p>
                         </div>
@@ -1037,8 +1178,11 @@ const Dashboard: React.FC = () => {
                     <div className="risk-metrics-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Sharpe Ratio</h5>
-                          <p className="card-text" style={{ color: parseFloat(riskMetrics.sharpeRatio) > 1.5 ? '#28a745' : parseFloat(riskMetrics.sharpeRatio) > 0.5 ? '#ffc107' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Sharpe Ratio" 
+                            tooltip="Measures risk-adjusted return. Higher values indicate better risk-adjusted performance."
+                          />
+                          <p className={`card-text ${parseFloat(riskMetrics.sharpeRatio) > 1.5 ? 'text-success' : parseFloat(riskMetrics.sharpeRatio) > 0.5 ? 'text-warning' : 'text-danger'}`}>
                             {parseFloat(riskMetrics.sharpeRatio).toFixed(2)}
                           </p>
                         </div>
@@ -1051,8 +1195,11 @@ const Dashboard: React.FC = () => {
                     <div className="risk-metrics-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Sortino Ratio</h5>
-                          <p className="card-text" style={{ color: parseFloat(riskMetrics.sortinoRatio) > 1.5 ? '#28a745' : parseFloat(riskMetrics.sortinoRatio) > 0.5 ? '#ffc107' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Sortino Ratio" 
+                            tooltip="Similar to Sharpe ratio but only considers downside risk. Higher values indicate better risk-adjusted returns."
+                          />
+                          <p className={`card-text ${parseFloat(riskMetrics.sortinoRatio) > 1.5 ? 'text-success' : parseFloat(riskMetrics.sortinoRatio) > 0.5 ? 'text-warning' : 'text-danger'}`}>
                             {parseFloat(riskMetrics.sortinoRatio).toFixed(2)}
                           </p>
                         </div>
@@ -1061,8 +1208,11 @@ const Dashboard: React.FC = () => {
                     <div className="risk-metrics-card">
                       <div className="card">
                         <div className="card-body">
-                          <h5 className="card-title">Concentration</h5>
-                          <p className="card-text" style={{ color: parseFloat(riskMetrics.concentration) < 30 ? '#28a745' : parseFloat(riskMetrics.concentration) < 60 ? '#ffc107' : '#dc3545' }}>
+                          <CardTitle 
+                            title="Concentration" 
+                            tooltip="Measures how concentrated your portfolio is in specific assets. Higher values indicate higher concentration risk."
+                          />
+                          <p className={`card-text ${parseFloat(riskMetrics.concentration) < 30 ? 'text-success' : parseFloat(riskMetrics.concentration) < 60 ? 'text-warning' : 'text-danger'}`}>
                             {parseFloat(riskMetrics.concentration).toFixed(2)}%
                           </p>
                         </div>

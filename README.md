@@ -248,20 +248,19 @@ CREATE INDEX idx_request_tracking_ip_timestamp ON request_tracking(ip_address, t
    - Click "New" and select "Web Service"
    - Connect your GitHub repository
    - Configure the service:
-     - Name: `wallet-pnl-tracker`
-     - Environment: `Node`
-     - Build Command: `npm install && npm run build`
-     - Start Command: `npm start`
-     - Plan: Select an appropriate plan based on your needs
-
-3. **Environment Variables**:
-   - Add all the environment variables from your `.env.production` file
-   - Make sure to set `NODE_ENV=production`
-
-4. **Deploy**:
+     - **Name**: hyper-risk (or your preferred name)
+     - **Environment**: Node
+     - **Build Command**: `./render-build.sh`
+     - **Start Command**: `npm start`
+   - Add the required environment variables (see `.env.example`)
    - Click "Create Web Service"
-   - Render will automatically build and deploy your application
-   - Your application will be available at `https://wallet-pnl-tracker.onrender.com` (or your custom domain)
+
+3. **Verify Deployment**:
+   - Once the deployment is complete, Render will provide a URL for your application
+   - Visit the URL to ensure the application is running correctly
+   - Test the main functionality to verify everything works as expected
+
+For more detailed deployment instructions, please refer to the [deploy.md](./deploy.md) file.
 
 #### Deploying to Other Platforms
 

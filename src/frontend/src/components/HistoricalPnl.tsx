@@ -292,7 +292,7 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
       {/* Trading Performance Summary Card - Removed as it's now in the Account Summary card */}
       
       {/* PNL by Asset Card */}
-      <div className="card mb-4">
+      <div className="card mb-4 historical-pnl-card">
         <div className="card-header d-flex justify-content-between align-items-center">
           <h5 className="card-title mb-0">Historical PNL by Asset</h5>
           <button 
@@ -302,10 +302,11 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
             {showAssetTable ? 'Hide Details' : 'Show Details'}
           </button>
         </div>
-        <div className={`card-body ${showAssetTable ? '' : 'p-0'}`}>
+        <div className={`card-body ${showAssetTable ? 'p-3' : 'p-0'}`}>
           {showAssetTable ? (
             summaryData.length === 0 ? (
-              <div className="alert alert-info">
+              <div className="alert alert-info text-center">
+                <i className="bi bi-info-circle me-2"></i>
                 No trade history found for this wallet.
               </div>
             ) : (
@@ -358,7 +359,7 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
                         <td className={summary.netPnl >= 0 ? 'text-success' : 'text-danger'}>
                           <strong>{formatCurrency(summary.netPnl)}</strong>
                         </td>
-                        <td>{summary.tradeCount}</td>
+                        <td><strong>{summary.tradeCount}</strong></td>
                       </tr>
                     ))}
                   </tbody>
@@ -366,13 +367,11 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
               </div>
             )
           ) : (
-            <div className="text-center py-2" style={{ borderTop: '1px solid var(--card-border)', background: 'rgba(0,0,0,0.02)' }}>
+            <div className="text-center py-3" style={{ borderTop: '1px solid var(--card-border)', background: 'rgba(0,0,0,0.02)' }}>
               {summaryData.length > 0 ? (
-                <small className="text-muted">
-                  {summaryData.length} assets traded • Click "Show Details" to view breakdown
-                </small>
+                <>{summaryData.length} assets traded • Click "Show Details" to view breakdown</>
               ) : (
-                <small className="text-muted">No trade history found</small>
+                <>No trade history found for this wallet</>
               )}
             </div>
           )}

@@ -12,9 +12,9 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<ThemeType>('dark'); // Default to dark mode
 
-  // Apply theme class to body when theme changes
+  // Apply theme attribute to body when theme changes
   useEffect(() => {
-    document.body.className = `theme-${theme}`;
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 

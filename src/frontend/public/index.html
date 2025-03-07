@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
@@ -25,8 +25,91 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>HyperLiquid Risk</title>
+    <style>
+      /* Immediate dark theme styles to prevent white flash */
+      html[data-theme="dark"],
+      html[data-theme="dark"] body,
+      html[data-theme="dark"] #root,
+      html[data-theme="dark"] .app,
+      html[data-theme="dark"] .main-content,
+      html[data-theme="dark"] .header,
+      html[data-theme="dark"] .footer {
+        background-color: #212529 !important;
+        color: #f8f9fa !important;
+      }
+      
+      html[data-theme="dark"] * {
+        box-shadow: none !important;
+      }
+      
+      .dark-theme {
+        background-color: #212529 !important;
+        color: #f8f9fa !important;
+      }
+      
+      /* Ensure full height */
+      html, body, #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      
+      /* Force table text to be white in dark mode */
+      html[data-theme="dark"] table,
+      html[data-theme="dark"] table th,
+      html[data-theme="dark"] table td,
+      html[data-theme="dark"] .table,
+      html[data-theme="dark"] .table th,
+      html[data-theme="dark"] .table td,
+      html[data-theme="dark"] .table thead th,
+      html[data-theme="dark"] .table tbody td,
+      body.dark-theme table,
+      body.dark-theme table th,
+      body.dark-theme table td,
+      body.dark-theme .table,
+      body.dark-theme .table th,
+      body.dark-theme .table td,
+      body.dark-theme .table thead th,
+      body.dark-theme .table tbody td {
+        color: #ffffff !important;
+      }
+      
+      /* Target the specific tables */
+      html[data-theme="dark"] .card .table,
+      html[data-theme="dark"] .card .table th,
+      html[data-theme="dark"] .card .table td,
+      html[data-theme="dark"] .card .table thead th,
+      html[data-theme="dark"] .card .table tbody td,
+      body.dark-theme .card .table,
+      body.dark-theme .card .table th,
+      body.dark-theme .card .table td,
+      body.dark-theme .card .table thead th,
+      body.dark-theme .card .table tbody td {
+        color: #ffffff !important;
+      }
+      
+      /* Fix table headers in dark mode - ensure dark background */
+      html[data-theme="dark"] table thead th,
+      html[data-theme="dark"] .table thead th,
+      body.dark-theme table thead th,
+      body.dark-theme .table thead th {
+        background-color: #2d2d2d !important;
+        color: #ffffff !important;
+        border-color: #444444 !important;
+      }
+      
+      /* Fix table header background in cards */
+      html[data-theme="dark"] .card table thead th,
+      html[data-theme="dark"] .card .table thead th,
+      body.dark-theme .card table thead th,
+      body.dark-theme .card .table thead th {
+        background-color: #2d2d2d !important;
+        color: #ffffff !important;
+        border-color: #444444 !important;
+      }
+    </style>
   </head>
-  <body>
+  <body class="dark-theme">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <!--

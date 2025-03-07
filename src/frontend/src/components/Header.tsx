@@ -6,9 +6,9 @@ import '../styles/App.css';
 const Header: React.FC = () => {
   return (
     <header className="header">
-      <div className="container header-container">
+      <div className="content-container header-container">
         <Link to="/" className="logo">
-          HyperLiquid Risk
+          hyper-flow.xyz
         </Link>
         <nav className="d-flex">
           <ul className="nav-menu">

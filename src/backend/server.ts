@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import path from 'path';
 import { SERVER_CONFIG, CORS_CONFIG, API_ENDPOINTS } from './config';
 import { errorHandler } from './middleware/error-handler.middleware';
 import { rateLimitMiddleware } from './middleware/rate-limit.middleware';
@@ -42,8 +43,19 @@ app.use(API_ENDPOINTS.wallets, walletRoutes);
 app.use(API_ENDPOINTS.pnl, pnlRoutes);
 // app.use(API_ENDPOINTS.riskMetrics, riskMetricsRoutes);
 
-// 404 handler
-app.use((req, res) => {
+// Serve static files from the React app in production
+if (SERVER_CONFIG.nodeEnv === 'production') {
+  // Serve static files
+  app.use(express.static(path.join(__dirname, '../public')));
+
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+  });
+}
+
+// 404 handler for API routes only in production
+app.use('/api/*', (req, res) => {
   res.status(404).json({
     success: false,
     error: `Cannot ${req.method} ${req.originalUrl}`,

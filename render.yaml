@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: hyper-risk
+    env: node
+    buildCommand: ./render-build.sh
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: HYPERLIQUID_API_URL
+        value: https://api.hyperliquid.xyz
+      - key: HYPERLIQUID_WS_URL
+        value: wss://api.hyperliquid.xyz/ws
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 60000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: CORS_ORIGIN
+        value: https://hyper-risk.onrender.com 

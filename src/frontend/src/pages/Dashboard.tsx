@@ -487,7 +487,7 @@ const Dashboard: React.FC = () => {
         return prevState;
       });
     }
-  }, [positions]);
+  }, [positions, userState]);
 
   // Separate function to load wallet data
   const handleWalletLoad = async (address: string) => {

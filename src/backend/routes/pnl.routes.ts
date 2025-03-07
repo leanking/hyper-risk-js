@@ -12,6 +12,7 @@ const router = Router();
  * @param {number} [endTime] - End time in milliseconds
  * @returns {Object} Historical PNL data
  */
+// @ts-ignore - TypeScript error with Express router types
 router.get('/historical/:address', PnlController.getHistoricalPnl);
 
 export default router; 

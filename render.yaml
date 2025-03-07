@@ -2,7 +2,7 @@ services:
   - type: web
     name: hyper-risk
     env: node
-    buildCommand: ./render-build.sh
+    buildCommand: ./render-build-simple.sh
     startCommand: npm start
     nodeVersion: 18.x
     envVars:

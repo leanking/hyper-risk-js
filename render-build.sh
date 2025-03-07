@@ -26,6 +26,36 @@ else
   echo "Warning: Backend build directory not found. Continuing anyway..."
 fi
 
+echo "=== STEP 2.5: Installing module-alias for path resolution ==="
+# Install module-alias to handle path aliases in production
+npm install --save module-alias
+
+# Create a register file for module-alias
+echo "Creating module-alias register file..."
+cat > dist/register.js << EOL
+// Register module aliases for compiled JavaScript
+const moduleAlias = require('module-alias');
+
+moduleAlias.addAliases({
+  '@backend': __dirname + '/backend',
+  '@frontend': __dirname + '/frontend',
+  '@shared': __dirname + '/shared'
+});
+EOL
+
+# Update the server.js file to require the register file
+if [ -f dist/backend/server.js ]; then
+  echo "Updating server.js to use module-alias..."
+  # Create a backup of the original server.js
+  cp dist/backend/server.js dist/backend/server.js.bak
+  
+  # Add the require statement at the beginning of the file
+  sed -i.bak '1s/^/require("..\/register");\n/' dist/backend/server.js
+  
+  # Remove the backup file
+  rm dist/backend/server.js.bak
+fi
+
 echo "=== STEP 3: Building frontend ==="
 # Make sure we're starting with a clean frontend build
 rm -rf src/frontend/build

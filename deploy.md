@@ -90,8 +90,9 @@ If you want to use a custom domain:
    - The build process follows these steps:
      1. Install root dependencies
      2. Build the backend first
-     3. Build the frontend
-     4. Copy the frontend build to the dist/public directory
+     3. Set up module-alias for path resolution
+     4. Build the frontend
+     5. Copy the frontend build to the dist/public directory
 
 2. **Dependency Conflicts**:
    - If you encounter TypeScript version conflicts (ERESOLVE errors), make sure:
@@ -100,7 +101,17 @@ If you want to use a custom domain:
      - The .npmrc file includes `legacy-peer-deps=true`
      - The package.json includes "overrides" and "resolutions" sections for TypeScript
 
-3. **TypeScript Compilation Errors**:
+3. **Path Alias Resolution**:
+   - The application uses TypeScript path aliases (e.g., `@shared/utils`)
+   - These aliases need to be resolved in the compiled JavaScript code
+   - The build script sets up module-alias to handle this in production
+   - If you encounter "Cannot find module '@shared/utils'" errors:
+     - Verify that module-alias is installed
+     - Check that the register.js file is created and properly imported
+     - Ensure the _moduleAliases section in package.json is correct
+     - Make sure the Node.js version is set to 18.18.0 in render.yaml
+
+4. **TypeScript Compilation Errors**:
    - The render-build.sh script is designed to handle common TypeScript errors by:
      - Setting `noEmitOnError` to false to allow compilation with errors
      - Using `--skipLibCheck` to ignore errors in declaration files
@@ -114,12 +125,12 @@ If you want to use a custom domain:
      - Temporarily modify the problematic files with appropriate fixes
      - Consider adding more specific error handling to the render-build.sh script
 
-4. **Runtime Errors**:
+5. **Runtime Errors**:
    - Check the logs in the Render dashboard
    - Verify all environment variables are correctly set
    - Ensure the Supabase connection is working
 
-5. **Frontend Not Loading**:
+6. **Frontend Not Loading**:
    - Verify that the frontend build was successful
    - Check that the static files are being served correctly
    - Inspect browser console for any JavaScript errors

@@ -102,6 +102,7 @@ interface HyperLiquidUserState {
     totalMfRatio: string;
     totalMarginUsed: string;
     totalMarginUsedRatio: string;
+    totalPositionValue?: string;
   };
 }
 
@@ -463,6 +464,31 @@ const Dashboard: React.FC = () => {
     }
   }, [urlWalletAddress, walletAddress]);
 
+  // Effect to update total position value whenever positions change
+  useEffect(() => {
+    if (positions.length > 0 && userState) {
+      // Calculate total position value from all positions
+      const totalPositionValue = positions.reduce(
+        (sum, position) => sum + parseFloat(position.quantity) * parseFloat(position.currentPrice),
+        0
+      );
+      
+      // Update the userState with the new total position value
+      setUserState(prevState => {
+        if (prevState && prevState.crossMarginSummary) {
+          return {
+            ...prevState,
+            crossMarginSummary: {
+              ...prevState.crossMarginSummary,
+              totalPositionValue: totalPositionValue.toString()
+            }
+          };
+        }
+        return prevState;
+      });
+    }
+  }, [positions]);
+
   // Separate function to load wallet data
   const handleWalletLoad = async (address: string) => {
     if (!address) {
@@ -776,6 +802,15 @@ const Dashboard: React.FC = () => {
           (sum, position) => sum + parseFloat(position.quantity) * parseFloat(position.currentPrice),
           0
         );
+        
+        // Store the total position value in the userState object for use in the UI
+        if (apiData && apiData.crossMarginSummary) {
+          // Store the calculated total position value that includes all positions (cross and isolated)
+          apiData.crossMarginSummary.totalPositionValue = totalPositionValue.toString();
+          
+          // Update the userState with the modified apiData
+          setUserState(apiData as HyperLiquidUserState);
+        }
         
         // Calculate concentration (% of largest position)
         const positionValues = positionsWithOverrides.map(
@@ -1319,9 +1354,16 @@ const Dashboard: React.FC = () => {
                     />
                     <MetricCard 
                       title="Total Position Value" 
-                      value={formatCurrency(userState.crossMarginSummary.totalNtlPos || '0')}
+                      value={formatCurrency(
+                        // First try to use the calculated total position value
+                        userState.crossMarginSummary.totalPositionValue || 
+                        // If not available, calculate it directly from positions
+                        (positions.length > 0 
+                          ? positions.reduce((sum, pos) => sum + parseFloat(pos.quantity) * parseFloat(pos.currentPrice), 0).toString()
+                          : userState.crossMarginSummary.totalNtlPos || '0')
+                      )}
                       trend="neutral"
-                      tooltip="The total value of all your open positions."
+                      tooltip="The total value of all your open positions (both cross and isolated margin)."
                     />
                   </div>
                 </div>

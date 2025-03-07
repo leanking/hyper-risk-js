@@ -115,6 +115,21 @@
   color: #9370db !important; /* MediumPurple - lighter shade for dark mode */
 }
 
+.logo-color {
+  color: #6a5acd !important; /* SlateBlue - same as logo */
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .logo-color {
+  color: #9370db !important; /* MediumPurple - lighter shade for dark mode, same as logo */
+}
+
+.logo-color:hover {
+  transform: scale(1.05);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .nav-menu {
   display: flex;
   list-style: none;
@@ -157,14 +172,16 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   padding: 0 1rem;
+  max-width: 1400px;
 }
 
 .footer-text {
   color: var(--text-color);
   white-space: nowrap;
+  padding-left: 1rem;
 }
 
 .footer-center {
@@ -172,12 +189,16 @@
   text-align: center;
   font-weight: 500;
   font-size: 0.675rem;
+  flex: 1;
 }
 
 .footer-link {
   color: var(--link-color);
   text-decoration: none;
   white-space: nowrap;
+  text-align: right;
+  padding-right: 1rem;
+  margin-left: auto;
 }
 
 .footer-link:hover {
@@ -191,6 +212,7 @@
     flex-direction: column;
     gap: 1rem;
     text-align: center;
+    padding: 0;
   }
 
   .footer-text,
@@ -198,6 +220,7 @@
   .footer-link {
     width: 100%;
     text-align: center;
+    padding: 0;
   }
 }
 

@@ -7,9 +7,9 @@ const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="content-container header-container">
-        <Link to="/" className="logo">
+        <a href="https://www.hyper-flow.xyz" className="logo">
           hyper-flow.xyz
-        </Link>
+        </a>
         <nav className="d-flex">
           <ul className="nav-menu">
             <li className="nav-item">

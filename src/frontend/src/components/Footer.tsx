@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
           Hypio's always free
         </div>
         <div>
-          <a href="https://hyperliquid.xyz" target="_blank" rel="noopener noreferrer" className="footer-link">
+          <a href="https://hyperliquid.xyz" target="_blank" rel="noopener noreferrer" className="footer-link logo-color">
             Powered by HyperLiquid
           </a>
         </div>

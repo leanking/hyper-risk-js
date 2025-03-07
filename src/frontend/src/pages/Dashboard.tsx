@@ -1333,6 +1333,13 @@ const Dashboard: React.FC = () => {
           </div>
         )}
       </div>
+      
+      {/* Historical PNL by Asset Section */}
+      {hasSubmitted && walletAddress && !error && (
+        <div className="mt-6">
+          <HistoricalPnl walletAddress={walletAddress} />
+        </div>
+      )}
     </div>
   );
 };

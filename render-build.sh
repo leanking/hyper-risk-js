@@ -3,12 +3,12 @@
 set -o errexit
 
 # Build backend
-npm install
+npm install --legacy-peer-deps
 npm run build
 
 # Build frontend
 cd src/frontend
-npm install
+npm install --legacy-peer-deps
 npm run build
 cd ../..
 

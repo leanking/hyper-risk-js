@@ -22,6 +22,7 @@ Ensure your repository includes all the necessary files for deployment:
 - `Procfile` - Specifies the command to run the application
 - `render-build.sh` - Build script for Render
 - `render.yaml` - Render configuration file
+- `.npmrc` - NPM configuration file
 
 ### 2. Set Up Supabase
 
@@ -42,6 +43,7 @@ Ensure your repository includes all the necessary files for deployment:
    - **Environment**: Node
    - **Build Command**: `./render-build.sh`
    - **Start Command**: `npm start`
+   - **Node Version**: 18.x (or another LTS version)
 5. Add the following environment variables:
    - `NODE_ENV`: production
    - `PORT`: 3001
@@ -86,12 +88,19 @@ If you want to use a custom domain:
    - Ensure all dependencies are correctly specified in package.json files
    - Verify that the build script has execute permissions (`chmod +x render-build.sh`)
 
-2. **Runtime Errors**:
+2. **Dependency Conflicts**:
+   - If you encounter TypeScript version conflicts (ERESOLVE errors), make sure:
+     - The TypeScript version in package.json is set to ^4.9.5 (compatible with react-scripts)
+     - The render-build.sh script uses the `--legacy-peer-deps` flag during installation
+     - The .npmrc file includes `legacy-peer-deps=true`
+     - The package.json includes "overrides" and "resolutions" sections for TypeScript
+
+3. **Runtime Errors**:
    - Check the logs in the Render dashboard
    - Verify all environment variables are correctly set
    - Ensure the Supabase connection is working
 
-3. **Frontend Not Loading**:
+4. **Frontend Not Loading**:
    - Verify that the frontend build was successful
    - Check that the static files are being served correctly
    - Inspect browser console for any JavaScript errors

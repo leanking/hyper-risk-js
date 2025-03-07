@@ -1058,9 +1058,8 @@ const Dashboard: React.FC = () => {
             <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
               This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-6 relative"> {/* Increased gap and padding */}
-              {/* Background pattern for visual interest */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 rounded-3xl"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-6 bg-gradient-to-br from-purple-500/5 to-blue-500/5 rounded-3xl py-8"> {/* Applied gradient directly to container and added padding */}
+              {/* Removed the background pattern div */}
               
               {/* PNL Tracking Card */}
               <div className="relative bg-gray-800/70 backdrop-blur-md p-8 rounded-2xl border border-gray-700 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 group hover:-translate-y-1">

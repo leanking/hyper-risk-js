@@ -277,10 +277,10 @@ const MetricCard: React.FC<MetricCardProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200 relative overflow-hidden group">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700 hover:shadow-md transition-all duration-200 relative overflow-hidden group min-h-[90px] flex flex-col justify-between">
       <div className={`absolute top-0 left-0 w-1 h-full ${getAccentClass()} transition-all duration-200`}></div>
       <div className="flex justify-between items-start mb-2">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 truncate pr-2">
           {title}
         </h3>
         {tooltip && <Tooltip text={tooltip} />}
@@ -305,11 +305,11 @@ interface SectionCardProps {
 
 const SectionCard: React.FC<SectionCardProps> = ({ title, children, className = '' }) => {
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 h-full transition-all duration-200 hover:shadow-xl ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 h-full transition-all duration-200 hover:shadow-xl flex flex-col ${className}`}>
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">{title}</h2>
       </div>
-      <div className="px-6 pt-6 pb-4 [&>div:last-child]:mb-0">
+      <div className="px-6 pt-6 pb-4 [&>div:last-child]:mb-0 flex-grow">
         {children}
       </div>
     </div>
@@ -1335,9 +1335,9 @@ const Dashboard: React.FC = () => {
           {/* Account Summary Section */}
           {hasSubmitted && userState && (
             <div className="lg:col-span-2">
-              <SectionCard title="Account Summary" className="mb-6">
+              <SectionCard title="Account Summary">
                 {/* Account Value Metrics */}
-                <div className="mb-6">
+                <div className="mb-8">
                   <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500 dark:text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -1345,7 +1345,7 @@ const Dashboard: React.FC = () => {
                     </svg>
                     Account Value
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <MetricCard 
                       title="Total Account Value" 
                       value={formatCurrency(userState.crossMarginSummary.accountValue)}
@@ -1369,14 +1369,14 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 {/* Margin Metrics */}
-                <div className="mb-6">
+                <div className="mb-8">
                   <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-amber-500 dark:text-amber-400" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                     </svg>
                     Margin Usage
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     <MetricCard 
                       title="Margin Usage" 
                       value={(() => {
@@ -1453,14 +1453,14 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 {/* PNL Metrics */}
-                <div className="mb-6">
+                <div className="mb-8">
                   <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-emerald-500 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
                     </svg>
                     Profit & Loss
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     <MetricCard 
                       title="Unrealized PNL" 
                       value={formatCurrency(unrealizedPnl)}
@@ -1513,14 +1513,14 @@ const Dashboard: React.FC = () => {
             <div className="lg:col-span-1">
               <SectionCard title="Risk Metrics">
                 {/* Volatility Metrics */}
-                <div className="mb-6">
+                <div className="mb-8">
                   <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
                     </svg>
                     Volatility & Drawdown
                   </h3>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <MetricCard 
                       title="Volatility" 
                       value={parseFloat(riskMetrics?.volatility || '0').toFixed(2)}
@@ -1535,6 +1535,18 @@ const Dashboard: React.FC = () => {
                       tooltip="The largest peak-to-trough decline in your portfolio value. Lower values are better."
                       trend={parseFloat(riskMetrics?.drawdown || '0') < 10 ? 'positive' : parseFloat(riskMetrics?.drawdown || '0') < 20 ? 'neutral' : 'negative'}
                     />
+                  </div>
+                </div>
+
+                {/* Value at Risk */}
+                <div className="mb-8">
+                  <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-red-500 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Risk Assessment
+                  </h3>
+                  <div className="grid grid-cols-1 gap-5">
                     <MetricCard 
                       title="Value at Risk (VaR)" 
                       value={formatCurrency(parseFloat(riskMetrics?.valueAtRisk || '0'))}
@@ -1558,14 +1570,14 @@ const Dashboard: React.FC = () => {
                 </div>
                 
                 {/* Performance Metrics */}
-                <div className="mb-6">
+                <div className="mb-8">
                   <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                     </svg>
                     Performance Ratios
                   </h3>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <MetricCard 
                       title="Sharpe Ratio" 
                       value={parseFloat(riskMetrics?.sharpeRatio || '0').toFixed(2)}
@@ -1580,8 +1592,8 @@ const Dashboard: React.FC = () => {
                     />
                   </div>
                 </div>
-                
-                {/* Portfolio Metrics */}
+
+                {/* Portfolio Composition */}
                 <div>
                   <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-purple-500 dark:text-purple-400" viewBox="0 0 20 20" fill="currentColor">
@@ -1591,7 +1603,7 @@ const Dashboard: React.FC = () => {
                     </svg>
                     Portfolio Composition
                   </h3>
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-5">
                     <MetricCard 
                       title="Concentration" 
                       value={parseFloat(riskMetrics?.concentration || '0').toFixed(2)}

@@ -278,7 +278,7 @@ const SectionCard: React.FC<SectionCardProps> = ({ title, children, className = 
       <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white m-0">{title}</h2>
       </div>
-      <div className="p-6">
+      <div className="px-6 pt-6 pb-4 [&>div:last-child]:mb-0">
         {children}
       </div>
     </div>
@@ -961,7 +961,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-80 py-8 px-4 sm:px-6 lg:px-8 relative">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-80 py-6 px-4 sm:px-6 lg:px-8 relative">
       {/* Background pattern */}
       <div className="absolute inset-0 z-0 opacity-5 dark:opacity-10 pointer-events-none">
         <div className="absolute inset-0" style={{ 
@@ -970,9 +970,9 @@ const Dashboard: React.FC = () => {
         }}></div>
       </div>
       
-      <div className="relative z-10 max-w-7xl mx-auto">
+      <div className="relative z-10 max-w-7xl mx-auto space-y-6">
         {/* Form Card */}
-        <FormCard className="mb-8 max-w-2xl mx-auto">
+        <FormCard className="max-w-2xl mx-auto">
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label htmlFor="walletAddress" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1021,69 +1021,72 @@ const Dashboard: React.FC = () => {
 
         {/* Feature Overview Grid */}
         {!hasSubmitted && (
-          <div className="max-w-7xl mx-auto mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-4">
+          <div className="max-w-7xl mx-auto space-y-12"> {/* Added space-y-12 for vertical spacing between sections */}
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-6">
               Enter a wallet address to view risk metrics and positions
             </h2>
-            <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-center text-gray-600 dark:text-gray-400 mb-8">
               This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto px-6 relative"> {/* Increased gap and padding */}
+              {/* Background pattern for visual interest */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 rounded-3xl"></div>
+              
               {/* PNL Tracking Card */}
-              <div className="bg-gray-800/50 p-6 rounded-lg">
-                <div className="flex items-center justify-center w-12 h-12 mb-4">
-                  <svg className="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="relative bg-gray-800/70 backdrop-blur-md p-8 rounded-2xl border border-gray-700 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 group hover:-translate-y-1">
+                <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-xl bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors duration-300">
+                  <svg className="w-8 h-8 text-purple-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">PNL Tracking</h3>
-                <p className="text-gray-400">Unrealized and realized PNL</p>
+                <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-purple-400 transition-colors duration-300">PNL Tracking</h3>
+                <p className="text-gray-300 text-sm leading-relaxed">Unrealized and realized PNL</p>
               </div>
 
               {/* Position Monitoring Card */}
-              <div className="bg-gray-800/50 p-6 rounded-lg">
-                <div className="flex items-center justify-center w-12 h-12 mb-4">
-                  <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="relative bg-gray-800/70 backdrop-blur-md p-8 rounded-2xl border border-gray-700 hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 group hover:-translate-y-1">
+                <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-xl bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors duration-300">
+                  <svg className="w-8 h-8 text-blue-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Position Monitoring</h3>
-                <p className="text-gray-400">Current open positions</p>
+                <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-blue-400 transition-colors duration-300">Position Monitoring</h3>
+                <p className="text-gray-300 text-sm leading-relaxed">Current open positions</p>
               </div>
 
               {/* Risk Assessment Card */}
-              <div className="bg-gray-800/50 p-6 rounded-lg">
-                <div className="flex items-center justify-center w-12 h-12 mb-4">
-                  <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="relative bg-gray-800/70 backdrop-blur-md p-8 rounded-2xl border border-gray-700 hover:border-red-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-red-500/20 group hover:-translate-y-1">
+                <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-xl bg-red-500/20 group-hover:bg-red-500/30 transition-colors duration-300">
+                  <svg className="w-8 h-8 text-red-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Risk Assessment</h3>
-                <p className="text-gray-400">Risk metrics for your account</p>
+                <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-red-400 transition-colors duration-300">Risk Assessment</h3>
+                <p className="text-gray-300 text-sm leading-relaxed">Risk metrics for your account</p>
               </div>
 
               {/* Detailed Analysis Card */}
-              <div className="bg-gray-800/50 p-6 rounded-lg">
-                <div className="flex items-center justify-center w-12 h-12 mb-4">
-                  <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="relative bg-gray-800/70 backdrop-blur-md p-8 rounded-2xl border border-gray-700 hover:border-green-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20 group hover:-translate-y-1">
+                <div className="flex items-center justify-center w-16 h-16 mb-6 rounded-xl bg-green-500/20 group-hover:bg-green-500/30 transition-colors duration-300">
+                  <svg className="w-8 h-8 text-green-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H9z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Detailed Analysis</h3>
-                <p className="text-gray-400">Position-specific risk analysis</p>
+                <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-green-400 transition-colors duration-300">Detailed Analysis</h3>
+                <p className="text-gray-300 text-sm leading-relaxed">Position-specific risk analysis</p>
               </div>
             </div>
           </div>
         )}
 
         {error && (
-          <AlertCard type="error" message={error} className="mb-6 max-w-2xl mx-auto" />
+          <AlertCard type="error" message={error} className="max-w-2xl mx-auto" />
         )}
         
         {/* Current Positions */}
         {hasSubmitted && positions.length > 0 && (
-          <TableCard title="Current Positions" className="mb-8">
+          <TableCard title="Current Positions">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-800">
@@ -1185,7 +1188,7 @@ const Dashboard: React.FC = () => {
           <AlertCard 
             type="info" 
             message="No positions found for this wallet. Please check the address and try again." 
-            className="mb-6 max-w-2xl mx-auto" 
+            className="max-w-2xl mx-auto" 
           />
         )}
         
@@ -1447,7 +1450,7 @@ const Dashboard: React.FC = () => {
         
         {/* Historical PNL by Asset Section */}
         {hasSubmitted && walletAddress && !error && (
-          <div className="mt-8">
+          <div>
             <HistoricalPnl walletAddress={walletAddress} />
           </div>
         )}

@@ -13,15 +13,19 @@ export const API_BASE_URL = isDevelopment
   ? 'http://localhost:3001/api' 
   : '/api';
 
-// API endpoints
+// API endpoints configuration
 export const API_ENDPOINTS = {
-  health: `${API_BASE_URL}/health`,
-  wallets: `${API_BASE_URL}/wallets`,
-  pnl: `${API_BASE_URL}/pnl`,
-  // Add other endpoints as needed
+  wallets: '/wallets',
+  transactions: '/transactions',
+  positions: '/positions',
+  pnl: '/pnl',
+  riskMetrics: '/risk-metrics'
 };
 
-export default {
+// API configuration object
+const apiConfig = {
   baseUrl: API_BASE_URL,
   endpoints: API_ENDPOINTS,
-}; 
+};
+
+export default apiConfig; 

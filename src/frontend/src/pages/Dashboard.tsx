@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // import '../styles/App.css'; // Removed to prevent conflicts with Tailwind
@@ -165,9 +165,30 @@ interface ApiResponse<T> {
 
 // Replace the Tooltip component with a Tailwind version
 const Tooltip = ({ text }: { text: string }) => {
+  const [isVisible, setIsVisible] = React.useState(false);
+  const tooltipRef = React.useRef<HTMLDivElement>(null);
+  const iconRef = React.useRef<HTMLSpanElement>(null);
+  const [position, setPosition] = React.useState({ top: 0, left: 0 });
+
+  // Update tooltip position when it becomes visible
+  React.useEffect(() => {
+    if (isVisible && iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top - 10, // Position above the icon with some offset
+        left: rect.left + rect.width / 2
+      });
+    }
+  }, [isVisible]);
+
   return (
-    <div className="relative inline-block ml-2">
-      <span className="cursor-help text-gray-500 dark:text-gray-400 inline-flex items-center justify-center">
+    <>
+      <span 
+        ref={iconRef}
+        className="cursor-help text-gray-500 dark:text-gray-400 inline-flex items-center justify-center ml-2"
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+      >
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
           className="h-4 w-4 flex-shrink-0" 
@@ -181,23 +202,32 @@ const Tooltip = ({ text }: { text: string }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       </span>
-      <div 
-        className="absolute z-10 w-48 px-2 py-1 -mt-1 text-sm text-white bg-gray-900 rounded-lg shadow-lg -left-1/2 transform -translate-x-1/2 -translate-y-full opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-200"
-      >
-        {text}
-        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
-          <svg 
-            className="h-2 w-2 text-gray-900 flex-shrink-0" 
-            width="8" 
-            height="8" 
-            viewBox="0 0 10 10"
-            style={{ maxWidth: '8px', maxHeight: '8px', overflow: 'hidden' }}
-          >
-            <polygon points="0,0 5,5 10,0" fill="currentColor" />
-          </svg>
+      
+      {isVisible && (
+        <div 
+          ref={tooltipRef}
+          className="fixed z-[9999] w-48 px-2 py-1 text-sm text-white bg-gray-900 rounded-lg shadow-lg pointer-events-none"
+          style={{
+            top: `${position.top}px`,
+            left: `${position.left}px`,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          {text}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2">
+            <svg 
+              className="h-2 w-2 text-gray-900 flex-shrink-0" 
+              width="8" 
+              height="8" 
+              viewBox="0 0 10 10"
+              style={{ maxWidth: '8px', maxHeight: '8px', overflow: 'hidden' }}
+            >
+              <polygon points="0,0 5,5 10,0" fill="currentColor" />
+            </svg>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 

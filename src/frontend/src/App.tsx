@@ -14,6 +14,7 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/:walletAddress" element={<Dashboard />} />
             <Route path="*" element={<Dashboard />} />
           </Routes>
         </main>

@@ -7,59 +7,31 @@ npm install --legacy-peer-deps
 
 echo "=== STEP 2: Building backend ==="
 # Create a temporary TypeScript configuration for the build
-cp tsconfig.json tsconfig.build.json
-sed -i.bak 's/"noEmitOnError": false/"noEmitOnError": false, "skipLibCheck": true/' tsconfig.build.json
+echo "Creating temporary TypeScript configuration..."
+cat > tsconfig.build.json << EOL
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "skipLibCheck": true,
+    "outDir": "./dist"
+  }
+}
+EOL
 
-# Add @ts-ignore comments to problematic files
-if [ -f src/backend/routes/pnl.routes.ts ]; then
-  sed -i.bak 's|router.get.*PnlController.getHistoricalPnl|// @ts-ignore - TypeScript error with Express router types\nrouter.get('\''\/historical\/:address'\'', PnlController.getHistoricalPnl|g' src/backend/routes/pnl.routes.ts
-fi
-
-# Build with the temporary configuration and force flag
+# Build backend
 echo "Building backend with TypeScript..."
-npx tsc --project tsconfig.build.json --skipLibCheck --noEmit false || true
+npx tsc --project tsconfig.build.json
 
 # Verify backend build
 if [ -d "dist/backend" ]; then
   echo "Backend build successful!"
 else
-  echo "Warning: Backend build directory not found. Continuing anyway..."
-fi
-
-echo "=== STEP 2.5: Installing module-alias for path resolution ==="
-# Install module-alias to handle path aliases in production
-npm install --save module-alias
-
-# Create a register file for module-alias
-echo "Creating module-alias register file..."
-cat > dist/register.js << EOL
-// Register module aliases for compiled JavaScript
-const moduleAlias = require('module-alias');
-
-moduleAlias.addAliases({
-  '@backend': __dirname + '/backend',
-  '@frontend': __dirname + '/frontend',
-  '@shared': __dirname + '/shared'
-});
-EOL
-
-# Update the server.js file to require the register file
-if [ -f dist/backend/server.js ]; then
-  echo "Updating server.js to use module-alias..."
-  # Create a backup of the original server.js
-  cp dist/backend/server.js dist/backend/server.js.bak
-  
-  # Add the require statement at the beginning of the file
-  sed -i.bak '1s/^/require("..\/register");\n/' dist/backend/server.js
-  
-  # Remove the backup file
-  rm dist/backend/server.js.bak
+  echo "Error: Backend build failed!"
+  exit 1
 fi
 
 echo "=== STEP 3: Building frontend ==="
-# Make sure we're starting with a clean frontend build
-rm -rf src/frontend/build
-
 # Navigate to frontend directory
 cd src/frontend
 
@@ -67,9 +39,10 @@ cd src/frontend
 echo "Installing frontend dependencies..."
 npm install --legacy-peer-deps
 
-# Build frontend with CI=false to ignore warnings
+# Build frontend with warnings disabled
 echo "Building frontend..."
-CI=false npm run build
+export DISABLE_ESLINT_PLUGIN=true
+CI=false GENERATE_SOURCEMAP=false npm run build
 
 # Verify frontend build
 if [ -d "build" ]; then
@@ -82,18 +55,34 @@ fi
 # Return to root directory
 cd ../..
 
-echo "=== STEP 4: Cleanup and finalization ==="
-# Restore original files
-if [ -f src/backend/routes/pnl.routes.ts.bak ]; then
-  mv src/backend/routes/pnl.routes.ts.bak src/backend/routes/pnl.routes.ts
+echo "=== STEP 4: Setup production files ==="
+# Create dist/public directory
+mkdir -p dist/public
+
+# Copy frontend build to public directory
+echo "Copying frontend build to dist/public..."
+cp -r src/frontend/build/* dist/public/
+
+# Create module alias register file
+echo "Creating module-alias register file..."
+cat > dist/register.js << EOL
+require('module-alias/register');
+require('module-alias').addAliases({
+  '@backend': __dirname + '/backend',
+  '@frontend': __dirname + '/frontend',
+  '@shared': __dirname + '/shared'
+});
+EOL
+
+# Update server.js to use register file
+if [ -f dist/backend/server.js ]; then
+  echo "Updating server.js to use module-alias..."
+  sed -i.bak '1s/^/require("..\/register");\n/' dist/backend/server.js
+  rm dist/backend/server.js.bak
 fi
 
-# Clean up temporary files
-rm -f tsconfig.build.json tsconfig.build.json.bak
-
-# Copy frontend build to public directory for serving
-echo "Copying frontend build to dist/public..."
-mkdir -p dist/public
-cp -r src/frontend/build/* dist/public/
+# Clean up
+echo "Cleaning up..."
+rm tsconfig.build.json
 
 echo "=== Build completed successfully! ===" 

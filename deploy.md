@@ -96,15 +96,18 @@ If you want to use a custom domain:
      - The package.json includes "overrides" and "resolutions" sections for TypeScript
 
 3. **TypeScript Compilation Errors**:
-   - If you encounter TypeScript errors about unused variables or imports:
-     - Update tsconfig.json to set `"noUnusedLocals": false` and `"noUnusedParameters": false`
-     - Use the `--skipLibCheck` flag with the TypeScript compiler
-     - Temporarily rename problematic test files during the build process
-     - For test files with errors, consider adding `// @ts-ignore` comments or fixing the issues
-   - For specific errors:
-     - Express router type errors: Add `// @ts-ignore` comments above the problematic route handlers
-     - Test file errors: Temporarily modify test files during the build process
-     - If all else fails, try using the simplified build script (`render-build-simple.sh`) which uses more aggressive error suppression
+   - The render-build.sh script is designed to handle common TypeScript errors by:
+     - Setting `noEmitOnError` to false to allow compilation with errors
+     - Using `--skipLibCheck` to ignore errors in declaration files
+     - Using `CI=false` with npm run build to ignore warnings
+     - Adding `// @ts-ignore` comments to problematic route handlers
+   - For test files like App.test.tsx, ensure they are valid TypeScript modules by:
+     - Adding `export {}` at the end of the file
+     - Commenting out test functions that might cause issues
+   - If you still encounter TypeScript errors:
+     - Check the specific error message in the build logs
+     - Temporarily modify the problematic files with appropriate fixes
+     - Consider adding more specific error handling to the render-build.sh script
 
 4. **Runtime Errors**:
    - Check the logs in the Render dashboard

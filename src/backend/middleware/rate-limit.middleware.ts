@@ -23,7 +23,7 @@ export const rateLimitMiddleware = async (
     const { data: requestTrackingData, error } = await supabase
       .from(DB_TABLES.requestTracking)
       .select('*')
-      .eq('ipAddress', ipAddress)
+      .eq('ip_address', ipAddress)
       .gte('timestamp', windowStartTime.toISOString())
       .order('timestamp', { ascending: false });
 
@@ -48,7 +48,7 @@ export const rateLimitMiddleware = async (
     const { error: insertError } = await supabase
       .from(DB_TABLES.requestTracking)
       .insert({
-        ipAddress,
+        ip_address: ipAddress,
         endpoint,
         timestamp: currentTime.toISOString(),
         count: requestCount + 1,

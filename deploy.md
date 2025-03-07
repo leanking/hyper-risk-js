@@ -87,6 +87,11 @@ If you want to use a custom domain:
    - Check the build logs in Render for specific errors
    - Ensure all dependencies are correctly specified in package.json files
    - Verify that the build script has execute permissions (`chmod +x render-build.sh`)
+   - The build process follows these steps:
+     1. Install root dependencies
+     2. Build the backend first
+     3. Build the frontend
+     4. Copy the frontend build to the dist/public directory
 
 2. **Dependency Conflicts**:
    - If you encounter TypeScript version conflicts (ERESOLVE errors), make sure:

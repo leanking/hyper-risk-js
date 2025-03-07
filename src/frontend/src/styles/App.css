@@ -23,6 +23,8 @@
   --danger: #dc3545;
   --input-bg: #ffffff;
   --brand-purple: #6a5acd; /* Added brand purple color */
+  --progress-text-light: #ffffff;
+  --progress-text-dark: #212529;
 }
 
 [data-theme="dark"] {
@@ -41,6 +43,8 @@
   --danger: #dc3545;
   --input-bg: #2b3035;
   --brand-purple: #9370db; /* Lighter purple for dark mode */
+  --progress-text-light: #ffffff;
+  --progress-text-dark: #212529;
 }
 
 /* App layout */
@@ -1195,4 +1199,53 @@ body::after {
 /* Code and pre elements should use monospace font */
 code, pre {
   font-family: var(--font-monospace);
+}
+
+/* Progress bar text color adjustments */
+.progress-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent !important;
+  height: 16px !important;
+}
+
+.progress {
+  height: 16px !important;
+}
+
+.risk-score-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  color: white !important;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.25px;
+  pointer-events: none;
+  line-height: 1;
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.progress-bar:hover .risk-score-text {
+  opacity: 1;
+}
+
+/* Override any theme colors */
+.progress-bar .risk-score-text,
+[data-theme="dark"] .progress-bar .risk-score-text,
+.progress-bar.bg-success .risk-score-text,
+.progress-bar.bg-warning .risk-score-text,
+.progress-bar.bg-danger .risk-score-text {
+  color: white !important;
 } 

@@ -857,7 +857,7 @@ const Dashboard: React.FC = () => {
                               aria-valuemin={0} 
                               aria-valuemax={100}
                             >
-                              {riskScore}/100
+                              <span className="risk-score-text">{riskScore}/100</span>
                             </div>
                           </div>
                         </td>
@@ -1049,7 +1049,7 @@ const Dashboard: React.FC = () => {
                         <div className="card-body">
                           <CardTitle 
                             title="Total Realized PNL" 
-                            tooltip="The sum of all profits and losses from closed positions."
+                            tooltip="The sum of all profits and losses from closed positions. Only for the last 2,000 trades."
                           />
                           <p className={`card-text ${(pnlData?.metrics?.totalRealizedPnl || 0) >= 0 ? 'text-success' : 'text-danger'}`}>
                             {formatCurrency(pnlData?.metrics?.totalRealizedPnl || 0)}

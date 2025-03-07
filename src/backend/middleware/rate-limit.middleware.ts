@@ -52,8 +52,8 @@ export const rateLimitMiddleware = async (
         endpoint,
         timestamp: currentTime.toISOString(),
         count: requestCount + 1,
-        createdAt: currentTime.toISOString(),
-        updatedAt: currentTime.toISOString(),
+        created_at: currentTime.toISOString(),
+        updated_at: currentTime.toISOString(),
       });
 
     if (insertError) {

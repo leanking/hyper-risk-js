@@ -10,6 +10,9 @@ const Footer: React.FC = () => {
         <div className="footer-text">
           &copy; {currentYear} hyper-flow.xyz. All rights reserved.
         </div>
+        <div className="footer-center">
+          Hypio's always free
+        </div>
         <div>
           <a href="https://hyperliquid.xyz" target="_blank" rel="noopener noreferrer" className="footer-link">
             Powered by HyperLiquid

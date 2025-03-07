@@ -4,7 +4,7 @@
   "description": "Wallet PNL Tracker for cryptocurrency wallets",
   "main": "dist/backend/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc --skipLibCheck",
     "start": "node dist/backend/server.js",
     "dev:backend": "ts-node-dev --respawn --transpile-only -r tsconfig-paths/register src/backend/server.ts",
     "dev:frontend": "cd src/frontend && npm start",

@@ -95,12 +95,19 @@ If you want to use a custom domain:
      - The .npmrc file includes `legacy-peer-deps=true`
      - The package.json includes "overrides" and "resolutions" sections for TypeScript
 
-3. **Runtime Errors**:
+3. **TypeScript Compilation Errors**:
+   - If you encounter TypeScript errors about unused variables or imports:
+     - Update tsconfig.json to set `"noUnusedLocals": false` and `"noUnusedParameters": false`
+     - Use the `--skipLibCheck` flag with the TypeScript compiler
+     - Temporarily rename problematic test files during the build process
+     - For test files with errors, consider adding `// @ts-ignore` comments or fixing the issues
+
+4. **Runtime Errors**:
    - Check the logs in the Render dashboard
    - Verify all environment variables are correctly set
    - Ensure the Supabase connection is working
 
-4. **Frontend Not Loading**:
+5. **Frontend Not Loading**:
    - Verify that the frontend build was successful
    - Check that the static files are being served correctly
    - Inspect browser console for any JavaScript errors

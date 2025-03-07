@@ -1020,60 +1020,62 @@ const Dashboard: React.FC = () => {
         </FormCard>
 
         {/* Feature Overview Grid */}
-        <div className="max-w-7xl mx-auto mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-4">
-            Enter a wallet address to view risk metrics and positions
-          </h2>
-          <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
-            This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            {/* PNL Tracking Card */}
-            <div className="bg-gray-800/50 p-6 rounded-lg">
-              <div className="flex items-center justify-center w-12 h-12 mb-4">
-                <svg className="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+        {!hasSubmitted && (
+          <div className="max-w-7xl mx-auto mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white text-center mb-4">
+              Enter a wallet address to view risk metrics and positions
+            </h2>
+            <p className="text-center text-gray-600 dark:text-gray-400 mb-4">
+              This dashboard provides a comprehensive view of your HyperLiquid trading activity, including:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+              {/* PNL Tracking Card */}
+              <div className="bg-gray-800/50 p-6 rounded-lg">
+                <div className="flex items-center justify-center w-12 h-12 mb-4">
+                  <svg className="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">PNL Tracking</h3>
+                <p className="text-gray-400">Unrealized and realized PNL</p>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">PNL Tracking</h3>
-              <p className="text-gray-400">Unrealized and realized PNL</p>
-            </div>
 
-            {/* Position Monitoring Card */}
-            <div className="bg-gray-800/50 p-6 rounded-lg">
-              <div className="flex items-center justify-center w-12 h-12 mb-4">
-                <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+              {/* Position Monitoring Card */}
+              <div className="bg-gray-800/50 p-6 rounded-lg">
+                <div className="flex items-center justify-center w-12 h-12 mb-4">
+                  <svg className="w-8 h-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Position Monitoring</h3>
+                <p className="text-gray-400">Current open positions</p>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Position Monitoring</h3>
-              <p className="text-gray-400">Current open positions</p>
-            </div>
 
-            {/* Risk Assessment Card */}
-            <div className="bg-gray-800/50 p-6 rounded-lg">
-              <div className="flex items-center justify-center w-12 h-12 mb-4">
-                <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+              {/* Risk Assessment Card */}
+              <div className="bg-gray-800/50 p-6 rounded-lg">
+                <div className="flex items-center justify-center w-12 h-12 mb-4">
+                  <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Risk Assessment</h3>
+                <p className="text-gray-400">Risk metrics for your account</p>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Risk Assessment</h3>
-              <p className="text-gray-400">Risk metrics for your account</p>
-            </div>
 
-            {/* Detailed Analysis Card */}
-            <div className="bg-gray-800/50 p-6 rounded-lg">
-              <div className="flex items-center justify-center w-12 h-12 mb-4">
-                <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H9z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+              {/* Detailed Analysis Card */}
+              <div className="bg-gray-800/50 p-6 rounded-lg">
+                <div className="flex items-center justify-center w-12 h-12 mb-4">
+                  <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Detailed Analysis</h3>
+                <p className="text-gray-400">Position-specific risk analysis</p>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Detailed Analysis</h3>
-              <p className="text-gray-400">Position-specific risk analysis</p>
             </div>
           </div>
-        </div>
+        )}
 
         {error && (
           <AlertCard type="error" message={error} className="mb-6 max-w-2xl mx-auto" />

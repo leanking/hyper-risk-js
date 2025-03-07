@@ -73,7 +73,11 @@ if (SERVER_CONFIG.nodeEnv === 'production') {
   app.use(express.static(path.join(__dirname, '../public')));
 
   // Handle React routing, return all requests to React app
-  app.get('*', (req, res) => {
+  app.get('*', (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
     res.sendFile(path.join(__dirname, '../public/index.html'));
   });
 }

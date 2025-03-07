@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { API_ENDPOINTS } from '../config/api.config';
+import { API_ENDPOINTS, API_BASE_URL } from '../config/api.config';
 
 // Define types for the historical PNL data
 interface TradeInfo {
@@ -171,7 +171,7 @@ const HistoricalPnl: React.FC<HistoricalPnlProps> = ({ walletAddress }) => {
     try {
       // Fetch historical PNL data from the API
       const response = await axios.get<ApiResponse<HistoricalPnlData>>(
-        `${API_ENDPOINTS.pnl}/historical/${walletAddress}`
+        `${API_BASE_URL}${API_ENDPOINTS.pnl}/historical/${walletAddress}`
       );
       
       if (response.data.success && response.data.data) {

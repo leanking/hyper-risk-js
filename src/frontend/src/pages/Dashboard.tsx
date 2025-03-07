@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // import '../styles/App.css'; // Removed to prevent conflicts with Tailwind
@@ -429,6 +429,108 @@ const AlertCard: React.FC<AlertCardProps> = ({ type, message, className = '' }) 
   );
 };
 
+// Create a memoized PositionRow component
+interface PositionRowProps {
+  position: Position;
+}
+
+const PositionRow = memo(({ position }: PositionRowProps) => {
+  const entryPrice = parseFloat(position.entryPrice);
+  const currentPrice = parseFloat(position.currentPrice);
+  const quantity = parseFloat(position.quantity);
+  const unrealizedPnl = position.unrealizedPnl ? parseFloat(position.unrealizedPnl) : 0;
+  
+  // Calculate position size (quantity * current price)
+  const positionSize = quantity * currentPrice;
+  
+  // Calculate percentage change
+  const priceChange = currentPrice - entryPrice;
+  const percentageChange = (priceChange / entryPrice) * 100 * (position.side === 'short' ? -1 : 1);
+  
+  // Calculate risk score (simple example - could be more complex in real app)
+  const riskScore = Math.abs(percentageChange) > 10 ? 'High' : Math.abs(percentageChange) > 5 ? 'Medium' : 'Low';
+  
+  // Determine color classes based on values
+  const pnlColorClass = unrealizedPnl > 0 ? 'text-green-600 dark:text-green-400' : unrealizedPnl < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400';
+  const percentageColorClass = percentageChange > 0 ? 'text-green-600 dark:text-green-400' : percentageChange < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400';
+  const riskColorClass = riskScore === 'High' ? 'text-red-600 dark:text-red-400' : riskScore === 'Medium' ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-600 dark:text-green-400';
+  
+  return (
+    <tr key={position.id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="flex items-center">
+          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {position.asset}
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900 dark:text-gray-100 text-center">
+          {position.marginType === 'isolated' ? (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+              ISOLATED
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+              CROSS
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-center">
+        <div className="text-sm text-gray-900 dark:text-gray-100">
+          {position.side === 'long' ? (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+              LONG
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
+              SHORT
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right">
+        <div className="text-sm text-gray-900 dark:text-gray-100">{position.quantity}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right">
+        <div className="text-sm text-gray-900 dark:text-gray-100">{formatCurrency(positionSize)}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right">
+        <div className="text-sm text-gray-900 dark:text-gray-100">{formatCurrency(entryPrice)}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right">
+        <div className="text-sm text-gray-900 dark:text-gray-100">{formatCurrency(currentPrice)}</div>
+        <div className={`text-xs ${percentageColorClass}`}>
+          {percentageChange > 0 ? '+' : ''}{percentageChange.toFixed(2)}%
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-right">
+        <div className={`text-sm font-medium ${pnlColorClass}`}>
+          {formatCurrency(unrealizedPnl)}
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-center">
+        <div className={`text-sm font-medium ${riskColorClass}`}>
+          {riskScore}
+        </div>
+      </td>
+    </tr>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison function for memo
+  // Only re-render if important properties have changed
+  return (
+    prevProps.position.asset === nextProps.position.asset &&
+    prevProps.position.entryPrice === nextProps.position.entryPrice &&
+    prevProps.position.currentPrice === nextProps.position.currentPrice &&
+    prevProps.position.quantity === nextProps.position.quantity &&
+    prevProps.position.side === nextProps.position.side &&
+    prevProps.position.unrealizedPnl === nextProps.position.unrealizedPnl &&
+    prevProps.position.marginType === nextProps.position.marginType
+  );
+});
+
 const Dashboard: React.FC = () => {
   const { walletAddress: urlWalletAddress } = useParams<{ walletAddress?: string }>();
   const navigate = useNavigate();
@@ -455,48 +557,96 @@ const Dashboard: React.FC = () => {
   // Add state for sorting positions
   const [positionSortColumn, setPositionSortColumn] = useState<string>('asset');
   const [positionSortDirection, setPositionSortDirection] = useState<'asc' | 'desc'>('asc');
+  // Add state for auto-refresh
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState<boolean>(true);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitialMount = useRef(true);
 
-  // Effect to handle URL wallet address changes
+  // Effect to handle URL wallet address changes - only on initial mount or URL change
   useEffect(() => {
     if (urlWalletAddress && urlWalletAddress !== walletAddress) {
       setWalletAddress(urlWalletAddress);
-      handleWalletLoad(urlWalletAddress);
+      
+      // Only load wallet data if this isn't from an auto-refresh
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        handleWalletLoad(urlWalletAddress);
+      }
     }
-  }, [urlWalletAddress, walletAddress]);
+  }, [urlWalletAddress, walletAddress]); // Added walletAddress to dependency array
 
   // Effect to update total position value whenever positions change
   useEffect(() => {
-    if (positions.length > 0 && userState) {
-      // Calculate total position value from all positions
-      const totalPositionValue = positions.reduce(
-        (sum, position) => sum + parseFloat(position.quantity) * parseFloat(position.currentPrice),
-        0
-      );
-      
-      // Update the userState with the new total position value
+    // Skip this effect if there are no positions or userState
+    if (!positions.length || !userState || !userState.crossMarginSummary) {
+      return;
+    }
+    
+    // Calculate total position value from all positions
+    const totalPositionValue = positions.reduce(
+      (sum, position) => sum + parseFloat(position.quantity) * parseFloat(position.currentPrice),
+      0
+    );
+    
+    // Convert to string for comparison
+    const totalPositionValueStr = totalPositionValue.toString();
+    
+    // Only update if the value has actually changed to prevent infinite loops
+    if (userState.crossMarginSummary.totalPositionValue !== totalPositionValueStr) {
+      // Use functional update to avoid dependency on userState
       setUserState(prevState => {
         if (prevState && prevState.crossMarginSummary) {
           return {
             ...prevState,
             crossMarginSummary: {
               ...prevState.crossMarginSummary,
-              totalPositionValue: totalPositionValue.toString()
+              totalPositionValue: totalPositionValueStr
             }
           };
         }
         return prevState;
       });
     }
-  }, [positions, userState]);
+  }, [positions, userState]); // Added userState to dependency array
+
+  // Setup auto-refresh interval
+  useEffect(() => {
+    // Clear any existing interval
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
+    }
+
+    // Only set up interval if auto-refresh is enabled and we have a wallet address
+    if (autoRefreshEnabled && walletAddress && hasSubmitted && userState) {
+      console.log('Setting up auto-refresh interval');
+      refreshIntervalRef.current = setInterval(() => {
+        console.log(`Auto-refreshing data for wallet ${walletAddress} at ${new Date().toLocaleTimeString()}`);
+        handleWalletLoad(walletAddress, true);
+        setLastRefreshTime(new Date());
+      }, 60000); // 60 seconds interval
+    }
+
+    // Cleanup function
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
+  }, [autoRefreshEnabled, walletAddress, hasSubmitted, userState, isLoading]); // Added isLoading to dependency array
 
   // Separate function to load wallet data
-  const handleWalletLoad = async (address: string) => {
+  const handleWalletLoad = async (address: string, isAutoRefresh = false) => {
     if (!address) {
       setError('Please enter a wallet address');
       return;
     }
     
-    setIsLoading(true);
+    if (!isAutoRefresh) {
+      setIsLoading(true);
+    }
     setError(null);
     setHasSubmitted(true);
     
@@ -507,7 +657,10 @@ const Dashboard: React.FC = () => {
         user: address
       });
       
-      console.log('HyperLiquid API response:', JSON.stringify(response.data, null, 2));
+      // Only log detailed data if not auto-refreshing to reduce console spam
+      if (!isAutoRefresh) {
+        console.log('HyperLiquid API response:', JSON.stringify(response.data, null, 2));
+      }
       
       // Process the response to ensure margin ratios are calculated if missing
       const apiData = response.data as any;
@@ -573,11 +726,13 @@ const Dashboard: React.FC = () => {
           apiData.crossMarginSummary.accountValue = accountValue.toString();
           
           // Log important margin data for debugging
-          console.log('Account Value:', apiData.crossMarginSummary.accountValue);
-          console.log('Total Margin Used:', apiData.crossMarginSummary.totalMarginUsed);
-          console.log('Total Margin Used Ratio:', apiData.crossMarginSummary.totalMarginUsedRatio);
-          console.log('Total Maintenance Margin:', apiData.crossMarginSummary.totalMm);
-          console.log('Total Maintenance Margin Ratio:', apiData.crossMarginSummary.totalMmRatio);
+          if (!isAutoRefresh) {
+            console.log('Account Value:', apiData.crossMarginSummary.accountValue);
+            console.log('Total Margin Used:', apiData.crossMarginSummary.totalMarginUsed);
+            console.log('Total Margin Used Ratio:', apiData.crossMarginSummary.totalMarginUsedRatio);
+            console.log('Total Maintenance Margin:', apiData.crossMarginSummary.totalMm);
+            console.log('Total Maintenance Margin Ratio:', apiData.crossMarginSummary.totalMmRatio);
+          }
         } else {
           console.warn('Account value is zero or not available');
         }
@@ -597,7 +752,10 @@ const Dashboard: React.FC = () => {
         type: 'allMids'
       });
       
-      console.log('Market data response:', JSON.stringify(marketResponse.data, null, 2));
+      // Only log detailed market data if not auto-refreshing
+      if (!isAutoRefresh) {
+        console.log('Market data response:', JSON.stringify(marketResponse.data, null, 2));
+      }
       
       // Create a simple map of asset to price
       const marketPrices: Record<string, string> = {};
@@ -614,12 +772,18 @@ const Dashboard: React.FC = () => {
           }
         }
         
-        console.log('Extracted market prices for assets:', Object.keys(marketPrices).length);
+        // Only log if not auto-refreshing
+        if (!isAutoRefresh) {
+          console.log('Extracted market prices for assets:', Object.keys(marketPrices).length);
+        }
       } catch (err) {
         console.error('Error processing market data:', err);
       }
       
-      console.log('Extracted market prices:', marketPrices);
+      // Only log if not auto-refreshing
+      if (!isAutoRefresh) {
+        console.log('Extracted market prices:', marketPrices);
+      }
       
       // Create mock positions for testing if needed
       const mockPositions = [
@@ -659,14 +823,21 @@ const Dashboard: React.FC = () => {
       
       try {
         // Try to extract positions from the API response
-        console.log('API data structure:', Object.keys(apiData));
+        if (!isAutoRefresh) {
+          console.log('API data structure:', Object.keys(apiData));
+        }
         
         // Check if assetPositions exists and is an array
         if (apiData.assetPositions && Array.isArray(apiData.assetPositions)) {
-          console.log('Found assetPositions array with length:', apiData.assetPositions.length);
+          if (!isAutoRefresh) {
+            console.log('Found assetPositions array with length:', apiData.assetPositions.length);
+          }
           
           apiData.assetPositions.forEach((assetPosition: any, index: number) => {
-            console.log(`Processing position ${index}:`, assetPosition);
+            // Only log detailed position data if not auto-refreshing
+            if (!isAutoRefresh) {
+              console.log(`Processing position ${index}:`, assetPosition);
+            }
             
             // The structure is different from what we expected
             // The coin is directly in the position object for some positions
@@ -701,13 +872,18 @@ const Dashboard: React.FC = () => {
                 marginType = 'isolated';
               }
               
-              console.log(`Extracted position data: Asset=${asset}, Size=${size}, EntryPrice=${entryPrice}, PNL=${unrealizedPnl}, MarginType=${marginType}`);
+              // Only log detailed position data if not auto-refreshing
+              if (!isAutoRefresh) {
+                console.log(`Extracted position data: Asset=${asset}, Size=${size}, EntryPrice=${entryPrice}, PNL=${unrealizedPnl}, MarginType=${marginType}`);
+              }
               
               if (asset && size && parseFloat(size) !== 0) {
                 // Get current price from market data
                 let currentPrice = marketPrices[asset];
                 if (!currentPrice) {
-                  console.log(`No market price found for ${asset}, using entry price`);
+                  if (!isAutoRefresh) {
+                    console.log(`No market price found for ${asset}, using entry price`);
+                  }
                   // If we don't have market price, use entry price with a slight adjustment
                   const entryPriceNum = parseFloat(entryPrice);
                   const adjustment = entryPriceNum * 0.01 * (Math.random() > 0.5 ? 1 : -1); // ±1% random adjustment
@@ -734,19 +910,27 @@ const Dashboard: React.FC = () => {
                   updatedAt: new Date()
                 });
                 
-                console.log(`Added position for ${asset}`);
+                if (!isAutoRefresh) {
+                  console.log(`Added position for ${asset}`);
+                }
               } else {
-                console.log(`Skipping position due to missing data or zero size: Asset=${asset}, Size=${size}`);
+                if (!isAutoRefresh) {
+                  console.log(`Skipping position due to missing data or zero size: Asset=${asset}, Size=${size}`);
+                }
               }
             } else {
-              console.log(`Position ${index} has unexpected structure:`, assetPosition);
+              if (!isAutoRefresh) {
+                console.log(`Position ${index} has unexpected structure:`, assetPosition);
+              }
             }
           });
         } else {
-          console.log('No assetPositions array found in API response');
-          
-          // If we couldn't find positions in the API response, use mock positions for testing
-          console.log('Using mock positions for testing');
+          if (!isAutoRefresh) {
+            console.log('No assetPositions array found in API response');
+            
+            // If we couldn't find positions in the API response, use mock positions for testing
+            console.log('Using mock positions for testing');
+          }
           currentPositions.push(...mockPositions);
         }
       } catch (err) {
@@ -755,7 +939,9 @@ const Dashboard: React.FC = () => {
         currentPositions.push(...mockPositions);
       }
       
-      console.log('Final positions to display:', currentPositions);
+      if (!isAutoRefresh) {
+        console.log('Final positions to display:', currentPositions);
+      }
       
       // Ensure all positions have a marginType field
       const positionsWithMarginType = currentPositions.map(position => {
@@ -806,10 +992,30 @@ const Dashboard: React.FC = () => {
         // Store the total position value in the userState object for use in the UI
         if (apiData && apiData.crossMarginSummary) {
           // Store the calculated total position value that includes all positions (cross and isolated)
-          apiData.crossMarginSummary.totalPositionValue = totalPositionValue.toString();
+          const newTotalPositionValue = totalPositionValue.toString();
           
-          // Update the userState with the modified apiData
-          setUserState(apiData as HyperLiquidUserState);
+          // Only update if different to prevent render loops
+          if (apiData.crossMarginSummary.totalPositionValue !== newTotalPositionValue) {
+            apiData.crossMarginSummary.totalPositionValue = newTotalPositionValue;
+            
+            // Update the userState with the modified apiData - use functional update
+            setUserState(prevState => {
+              if (prevState) {
+                // Only update if the value has changed
+                if (!prevState.crossMarginSummary || 
+                    prevState.crossMarginSummary.totalPositionValue !== newTotalPositionValue) {
+                  return {
+                    ...prevState,
+                    crossMarginSummary: {
+                      ...(prevState.crossMarginSummary || {}),
+                      totalPositionValue: newTotalPositionValue
+                    }
+                  };
+                }
+              }
+              return prevState || apiData as HyperLiquidUserState;
+            });
+          }
         }
         
         // Calculate concentration (% of largest position)
@@ -845,7 +1051,9 @@ const Dashboard: React.FC = () => {
       console.error('Error fetching data:', err);
       setError(err.message || 'An error occurred while fetching data from HyperLiquid API');
     } finally {
-      setIsLoading(false);
+      if (!isAutoRefresh) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -862,6 +1070,19 @@ const Dashboard: React.FC = () => {
     
     // Load the wallet data
     await handleWalletLoad(walletAddress);
+  };
+
+  // Toggle auto-refresh
+  const toggleAutoRefresh = () => {
+    setAutoRefreshEnabled(!autoRefreshEnabled);
+  };
+
+  // Manual refresh button handler
+  const handleManualRefresh = () => {
+    if (!isLoading && walletAddress) {
+      handleWalletLoad(walletAddress);
+      setLastRefreshTime(new Date());
+    }
   };
 
   // Add function to calculate trading metrics
@@ -1026,6 +1247,13 @@ const Dashboard: React.FC = () => {
     );
   };
 
+  // Memoize the position rows to prevent unnecessary re-renders
+  const memoizedPositionRows = useMemo(() => 
+    positions.map(position => (
+      <PositionRow key={position.id} position={position} />
+    ))
+  , [positions]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-80 py-6 px-4 sm:px-6 lg:px-8 relative">
       {/* Background pattern */}
@@ -1083,6 +1311,46 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
           </form>
+          
+          {/* Auto-refresh controls */}
+          {hasSubmitted && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleManualRefresh}
+                  disabled={isLoading}
+                  className="inline-flex items-center px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Refresh Now
+                </button>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {lastRefreshTime ? `Last updated: ${lastRefreshTime.toLocaleTimeString()}` : ''}
+                </div>
+              </div>
+              <div className="flex items-center">
+                <label htmlFor="autoRefresh" className="mr-2 text-sm text-gray-700 dark:text-gray-300">
+                  Auto-refresh
+                </label>
+                <div className="relative inline-block w-10 mr-2 align-middle select-none">
+                  <input
+                    type="checkbox"
+                    id="autoRefresh"
+                    checked={autoRefreshEnabled}
+                    onChange={toggleAutoRefresh}
+                    className="sr-only"
+                  />
+                  <div className={`block w-10 h-6 rounded-full ${autoRefreshEnabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'} transition-colors`}></div>
+                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform ${autoRefreshEnabled ? 'translate-x-4' : ''}`}></div>
+                </div>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  (60s interval)
+                </span>
+              </div>
+            </div>
+          )}
         </FormCard>
 
         {/* Feature Overview Grid */}
@@ -1211,110 +1479,8 @@ const Dashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-800">
-                  {positions.map((position) => {
-                    console.log('Rendering position:', position);
-                    
-                    const entryPrice = parseFloat(position.entryPrice);
-                    const currentPrice = parseFloat(position.currentPrice);
-                    const quantity = parseFloat(position.quantity);
-                    const unrealizedPnl = position.unrealizedPnl ? parseFloat(position.unrealizedPnl) : 0;
-                    
-                    // Calculate position size (quantity * current price)
-                    const positionSize = quantity * currentPrice;
-                    
-                    // Calculate risk score out of 100 (more sophisticated)
-                    // Factors: price volatility, position size relative to account, leverage
-                    const priceDiff = Math.abs(currentPrice - entryPrice) / entryPrice;
-                    const volatilityFactor = Math.min(50, Math.round(priceDiff * 500)); // 50% of score based on price volatility
-                    
-                    // Size factor - larger positions are riskier
-                    // This is a placeholder - in a real app, you'd compare to account size
-                    const sizeFactor = Math.min(30, Math.round((positionSize / 10000) * 30)); // 30% of score based on size
-                    
-                    // Margin type factor - isolated is less risky for the account as a whole
-                    const marginFactor = position.marginType === 'cross' ? 20 : 10; // 20% of score based on margin type
-                    
-                    // Combined risk score out of 100
-                    const riskScore = volatilityFactor + sizeFactor + marginFactor;
-                    
-                    return (
-                      <tr key={position.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-150">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mr-3 font-medium">
-                              {position.asset.substring(0, 1)}
-                            </div>
-                            <div className="font-medium text-gray-900 dark:text-white">{position.asset || 'Unknown'}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            position.side === 'long' 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                          }`}>
-                            {position.side.toUpperCase()}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                            position.marginType && position.marginType === 'cross' 
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' 
-                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                          }`}>
-                            {position.marginType ? position.marginType.toUpperCase() : 'CROSS'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">{isNaN(quantity) ? '0.0000' : quantity.toFixed(4)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white text-right">{formatCurrency(positionSize.toString())}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(position.entryPrice)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300 text-right">{formatCurrency(position.currentPrice)}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${
-                          unrealizedPnl >= 0 
-                            ? 'text-green-600 dark:text-green-400' 
-                            : 'text-red-600 dark:text-red-400'
-                        }`}>
-                          <div className="flex items-center justify-end">
-                            <span>{formatCurrency(position.unrealizedPnl || '0')}</span>
-                            <span className="ml-1.5">
-                              {unrealizedPnl >= 0 ? (
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                  <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                </svg>
-                              ) : (
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                  <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                            <div 
-                              className={`h-2.5 rounded-full ${
-                                riskScore < 30 
-                                  ? 'bg-green-500' 
-                                  : riskScore < 70 
-                                    ? 'bg-yellow-500' 
-                                    : 'bg-red-500'
-                              }`} 
-                              style={{ width: `${riskScore}%` }}
-                            ></div>
-                          </div>
-                          <span className={`text-xs font-medium mt-1 block ${
-                            riskScore < 30 
-                              ? 'text-green-600 dark:text-green-400' 
-                              : riskScore < 70 
-                                ? 'text-yellow-600 dark:text-yellow-400' 
-                                : 'text-red-600 dark:text-red-400'
-                          }`}>
-                            {riskScore}/100
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {/* Fix the conditional useMemo error by moving the useMemo outside the JSX */}
+                  {memoizedPositionRows}
                 </tbody>
               </table>
             </div>

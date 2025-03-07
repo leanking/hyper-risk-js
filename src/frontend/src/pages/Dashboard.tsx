@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // import '../styles/App.css'; // Removed to prevent conflicts with Tailwind
@@ -1423,7 +1423,20 @@ const Dashboard: React.FC = () => {
                       title="Value at Risk (VaR)" 
                       value={formatCurrency(parseFloat(riskMetrics?.valueAtRisk || '0'))}
                       tooltip="The maximum potential loss expected with 95% confidence over a day. Lower values relative to portfolio size are better."
-                      trend="neutral"
+                      trend={(() => {
+                        // Calculate VaR as a percentage of account value
+                        const varValue = parseFloat(riskMetrics?.valueAtRisk || '0');
+                        const accountValue = userState?.crossMarginSummary?.accountValue 
+                          ? parseFloat(userState.crossMarginSummary.accountValue) 
+                          : 0;
+                        
+                        if (accountValue <= 0) return 'neutral';
+                        
+                        const varPercentage = (varValue / accountValue) * 100;
+                        
+                        // Lower VaR is better (less potential loss)
+                        return varPercentage < 5 ? 'positive' : varPercentage < 10 ? 'neutral' : 'negative';
+                      })()}
                     />
                   </div>
                 </div>

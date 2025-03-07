@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/App.css';
@@ -204,7 +205,9 @@ const CardTitle = ({ title, tooltip }: { title: string; tooltip?: string }) => {
 };
 
 const Dashboard: React.FC = () => {
-  const [walletAddress, setWalletAddress] = useState<string>('');
+  const { walletAddress: urlWalletAddress } = useParams<{ walletAddress?: string }>();
+  const navigate = useNavigate();
+  const [walletAddress, setWalletAddress] = useState<string>(urlWalletAddress || '');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [positions, setPositions] = useState<Position[]>([]);
@@ -228,10 +231,17 @@ const Dashboard: React.FC = () => {
   const [positionSortColumn, setPositionSortColumn] = useState<string>('asset');
   const [positionSortDirection, setPositionSortDirection] = useState<'asc' | 'desc'>('asc');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!walletAddress) {
+  // Effect to handle URL wallet address changes
+  useEffect(() => {
+    if (urlWalletAddress && urlWalletAddress !== walletAddress) {
+      setWalletAddress(urlWalletAddress);
+      handleWalletLoad(urlWalletAddress);
+    }
+  }, [urlWalletAddress]);
+
+  // Separate function to load wallet data
+  const handleWalletLoad = async (address: string) => {
+    if (!address) {
       setError('Please enter a wallet address');
       return;
     }
@@ -244,7 +254,7 @@ const Dashboard: React.FC = () => {
       // Fetch real data from HyperLiquid API
       const response = await axios.post('https://api.hyperliquid.xyz/info', {
         type: 'clearinghouseState',
-        user: walletAddress
+        user: address
       });
       
       console.log('HyperLiquid API response:', JSON.stringify(response.data, null, 2));
@@ -578,6 +588,21 @@ const Dashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!walletAddress) {
+      setError('Please enter a wallet address');
+      return;
+    }
+
+    // Update the URL with the wallet address
+    navigate(`/${walletAddress}`);
+    
+    // Load the wallet data
+    await handleWalletLoad(walletAddress);
   };
 
   // Add function to calculate trading metrics

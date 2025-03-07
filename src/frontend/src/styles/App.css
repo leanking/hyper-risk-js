@@ -277,39 +277,41 @@
   padding: 0.5rem 1.5rem;
   font-weight: 500;
   letter-spacing: 0.5px;
-  background-color: var(--btn-primary-bg);
-  border-color: var(--btn-primary-bg);
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
   color: var(--btn-primary-text);
   transition: all 0.2s ease-in-out;
   white-space: nowrap;
 }
 
 .btn-primary:hover {
-  background-color: var(--link-hover-color);
-  border-color: var(--link-hover-color);
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
+  opacity: 0.9;
 }
 
 .btn-secondary {
   color: var(--btn-secondary-text);
-  background-color: var(--btn-secondary-bg);
-  border-color: var(--btn-secondary-bg);
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
 }
 
 .btn-secondary:hover {
-  background-color: #5a6268;
-  border-color: #545b62;
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
+  opacity: 0.9;
 }
 
 .btn-outline-primary {
-  color: var(--link-color);
+  color: var(--brand-purple);
   background-color: transparent;
-  border-color: var(--link-color);
+  border-color: var(--brand-purple);
 }
 
 .btn-outline-primary:hover {
   color: #fff;
-  background-color: var(--link-color);
-  border-color: var(--link-color);
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
 }
 
 .btn-sm {
@@ -915,13 +917,24 @@
 }
 
 [data-theme="dark"] .btn-primary {
-  background-color: var(--primary);
-  border-color: var(--primary);
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
 }
 
 [data-theme="dark"] .btn-secondary {
-  background-color: var(--secondary);
-  border-color: var(--secondary);
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
+}
+
+[data-theme="dark"] .btn-outline-primary {
+  color: var(--brand-purple);
+  border-color: var(--brand-purple);
+}
+
+[data-theme="dark"] .btn-outline-primary:hover {
+  color: #fff;
+  background-color: var(--brand-purple);
+  border-color: var(--brand-purple);
 }
 
 /* Apply background color to html and body to avoid white flashes */

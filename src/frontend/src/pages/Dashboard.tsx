@@ -464,19 +464,6 @@ const PositionRow = memo(({ position }: PositionRowProps) => {
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900 dark:text-gray-100 text-center">
-          {position.marginType === 'isolated' ? (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
-              ISOLATED
-            </span>
-          ) : (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
-              CROSS
-            </span>
-          )}
-        </div>
-      </td>
       <td className="px-6 py-4 whitespace-nowrap text-center">
         <div className="text-sm text-gray-900 dark:text-gray-100">
           {position.side === 'long' ? (
@@ -486,6 +473,19 @@ const PositionRow = memo(({ position }: PositionRowProps) => {
           ) : (
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">
               SHORT
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900 dark:text-gray-100 text-center">
+          {position.marginType === 'isolated' ? (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
+              ISOLATED
+            </span>
+          ) : (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+              CROSS
             </span>
           )}
         </div>

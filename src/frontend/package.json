@@ -13,6 +13,7 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "axios": "^1.6.2",
+    "connectkit": "^1.8.2",
     "framer-motion": "^12.4.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -24,10 +25,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
     "postbuild": "npx purgecss --config ./purgecss.config.js --output build/static/css",
-    "test": "react-scripts test",
+    "test": "react-app-rewired test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -54,8 +55,10 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
+    "customize-cra": "^1.0.0",
     "postcss": "^8.4.21",
     "purgecss": "^7.0.2",
+    "react-app-rewired": "^2.2.1",
     "tailwindcss": "^3.3.0"
   }
 }

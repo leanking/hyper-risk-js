@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
+import CustomConnectButton from './CustomConnectButton';
 
 const Header: React.FC = () => {
   return (
@@ -25,7 +26,10 @@ const Header: React.FC = () => {
               </NavLink>
             </li>
           </ul>
-          <ThemeToggle />
+          <div className="flex items-center space-x-4">
+            <CustomConnectButton />
+            <ThemeToggle />
+          </div>
         </nav>
       </div>
     </header>

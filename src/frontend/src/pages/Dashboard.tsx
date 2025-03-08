@@ -2145,6 +2145,12 @@ const Dashboard: React.FC = () => {
                       <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('quantity')}>
                         <div className="flex items-center justify-end">
                           <span>Position Size</span>
+                          <div className="ml-1">{renderSortIndicator('quantity')}</div>
+                        </div>
+                      </th>
+                      <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('positionSize')}>
+                        <div className="flex items-center justify-end">
+                          <span>Position Value</span>
                           <div className="ml-1">{renderSortIndicator('positionSize')}</div>
                         </div>
                       </th>

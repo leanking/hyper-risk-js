@@ -2,6 +2,22 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Wallet Connection Setup
+
+This project uses [ConnectKit](https://docs.family.co/connectkit) for wallet connections, which is built on top of [wagmi](https://wagmi.sh/). To set up the wallet connection:
+
+1. Create a `.env` file in the root directory based on the `.env.example` file.
+2. Get a WalletConnect Project ID from [WalletConnect Cloud](https://cloud.walletconnect.com/) and add it to the `.env` file.
+3. The wallet connection button is implemented in the header using ConnectKit, which provides a polished UI and handles all edge cases around wallet connections.
+
+### ConnectKit Features
+
+- Seamless wallet connection experience
+- Support for multiple wallet providers
+- Customizable themes and UI
+- Handles edge cases and error states
+- Mobile responsive design
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -31,13 +47,13 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 ### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
 ## Learn More
 

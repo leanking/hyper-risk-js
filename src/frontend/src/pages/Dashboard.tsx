@@ -562,6 +562,8 @@ const Dashboard: React.FC = () => {
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
   const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMount = useRef(true);
+  // Add state for toggle animation
+  const [isToggleAnimating, setIsToggleAnimating] = useState<boolean>(false);
 
   // Effect to handle URL wallet address changes - only on initial mount or URL change
   useEffect(() => {
@@ -616,6 +618,7 @@ const Dashboard: React.FC = () => {
     if (refreshIntervalRef.current) {
       clearInterval(refreshIntervalRef.current);
       refreshIntervalRef.current = null;
+      console.log('Cleared existing auto-refresh interval');
     }
 
     // Only set up interval if auto-refresh is enabled and we have a wallet address
@@ -626,6 +629,13 @@ const Dashboard: React.FC = () => {
         handleWalletLoad(walletAddress, true);
         setLastRefreshTime(new Date());
       }, 60000); // 60 seconds interval
+    } else {
+      console.log('Auto-refresh conditions not met:', {
+        autoRefreshEnabled,
+        hasWalletAddress: !!walletAddress,
+        hasSubmitted,
+        hasUserState: !!userState
+      });
     }
 
     // Cleanup function
@@ -633,9 +643,10 @@ const Dashboard: React.FC = () => {
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
         refreshIntervalRef.current = null;
+        console.log('Cleaned up auto-refresh interval on unmount');
       }
     };
-  }, [autoRefreshEnabled, walletAddress, hasSubmitted, userState, isLoading]); // Added isLoading to dependency array
+  }, [autoRefreshEnabled, walletAddress, hasSubmitted, userState]);
 
   // Separate function to load wallet data
   const handleWalletLoad = async (address: string, isAutoRefresh = false) => {
@@ -1072,9 +1083,16 @@ const Dashboard: React.FC = () => {
     await handleWalletLoad(walletAddress);
   };
 
-  // Toggle auto-refresh
+  // Toggle auto-refresh with animation
   const toggleAutoRefresh = () => {
-    setAutoRefreshEnabled(!autoRefreshEnabled);
+    const newValue = !autoRefreshEnabled;
+    console.log(`Auto-refresh toggled to: ${newValue ? 'enabled' : 'disabled'}`);
+    
+    // Add animation effect
+    setIsToggleAnimating(true);
+    setTimeout(() => setIsToggleAnimating(false), 300);
+    
+    setAutoRefreshEnabled(newValue);
   };
 
   // Manual refresh button handler
@@ -1334,7 +1352,10 @@ const Dashboard: React.FC = () => {
                 <label htmlFor="autoRefresh" className="mr-2 text-sm text-gray-700 dark:text-gray-300">
                   Auto-refresh
                 </label>
-                <div className="relative inline-block w-10 mr-2 align-middle select-none">
+                <div 
+                  className="relative inline-block w-10 mr-2 align-middle select-none cursor-pointer"
+                  onClick={toggleAutoRefresh}
+                >
                   <input
                     type="checkbox"
                     id="autoRefresh"
@@ -1342,11 +1363,25 @@ const Dashboard: React.FC = () => {
                     onChange={toggleAutoRefresh}
                     className="sr-only"
                   />
-                  <div className={`block w-10 h-6 rounded-full ${autoRefreshEnabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'} transition-colors`}></div>
-                  <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform ${autoRefreshEnabled ? 'translate-x-4' : ''}`}></div>
+                  <div 
+                    className={`block w-10 h-6 rounded-full transition-colors duration-200 ease-in-out ${
+                      autoRefreshEnabled ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-600'
+                    } ${isToggleAnimating ? 'scale-105' : ''}`}
+                  ></div>
+                  <div 
+                    className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transition-transform duration-200 ease-in-out transform ${
+                      autoRefreshEnabled ? 'translate-x-4' : 'translate-x-0'
+                    } ${isToggleAnimating ? 'scale-110' : ''}`}
+                  ></div>
                 </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                   (60s interval)
+                  {autoRefreshEnabled && (
+                    <span className="ml-1 relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                  )}
                 </span>
               </div>
             </div>

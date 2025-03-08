@@ -12,7 +12,7 @@ interface AnimatedContentProps {
 const AnimatedContent: React.FC<AnimatedContentProps> = ({
   children,
   delay = 0,
-  duration = 0.5,
+  duration = 0.3,
   animation = 'fade',
   className = '',
 }) => {
@@ -32,37 +32,7 @@ const AnimatedContent: React.FC<AnimatedContentProps> = ({
         };
       case 'slide':
         return {
-          hidden: { opacity: 0, y: 20 },
-          visible: { 
-            opacity: 1, 
-            y: 0,
-            transition: { 
-              duration,
-              delay,
-              type: 'spring',
-              stiffness: 300,
-              damping: 24
-            }
-          }
-        };
-      case 'scale':
-        return {
-          hidden: { opacity: 0, scale: 0.8 },
-          visible: { 
-            opacity: 1, 
-            scale: 1,
-            transition: { 
-              duration,
-              delay,
-              type: 'spring',
-              stiffness: 300,
-              damping: 24
-            }
-          }
-        };
-      case 'bounce':
-        return {
-          hidden: { opacity: 0, y: 50 },
+          hidden: { opacity: 0, y: 10 },
           visible: { 
             opacity: 1, 
             y: 0,
@@ -71,7 +41,37 @@ const AnimatedContent: React.FC<AnimatedContentProps> = ({
               delay,
               type: 'spring',
               stiffness: 400,
-              damping: 10
+              damping: 30
+            }
+          }
+        };
+      case 'scale':
+        return {
+          hidden: { opacity: 0, scale: 0.9 },
+          visible: { 
+            opacity: 1, 
+            scale: 1,
+            transition: { 
+              duration,
+              delay,
+              type: 'spring',
+              stiffness: 400,
+              damping: 30
+            }
+          }
+        };
+      case 'bounce':
+        return {
+          hidden: { opacity: 0, y: 20 },
+          visible: { 
+            opacity: 1, 
+            y: 0,
+            transition: { 
+              duration,
+              delay,
+              type: 'spring',
+              stiffness: 500,
+              damping: 15
             }
           }
         };

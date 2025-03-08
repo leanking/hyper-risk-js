@@ -22,11 +22,11 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
     },
   };
 
-  // Transition settings
+  // Transition settings - adjusted for smoother animation
   const pageTransition = {
     type: 'tween',
-    ease: 'anticipate',
-    duration: 0.5,
+    ease: 'easeInOut', // Changed from 'anticipate' for smoother motion
+    duration: 0.4, // Slightly faster
   };
 
   return (
@@ -36,6 +36,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
       exit="out"
       variants={pageVariants}
       transition={pageTransition}
+      style={{ width: '100%' }} // Ensure full width
     >
       {children}
     </motion.div>

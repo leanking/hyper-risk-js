@@ -886,13 +886,18 @@ const Dashboard: React.FC = () => {
     if (urlWalletAddress && urlWalletAddress !== walletAddress) {
       setWalletAddress(urlWalletAddress);
       
-      // Only load wallet data if this isn't from an auto-refresh
-      if (isInitialMount.current) {
+      // Only load wallet data if this is the initial mount and not triggered by our own navigation
+      if (isInitialMount.current && !isLoading) {
         isInitialMount.current = false;
-        handleWalletLoad(urlWalletAddress);
+        
+        // Add a small delay to ensure state updates properly
+        setTimeout(() => {
+          handleWalletLoad(urlWalletAddress);
+        }, 100);
       }
     }
-  }, [urlWalletAddress, walletAddress]); // Added walletAddress to dependency array
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlWalletAddress, isLoading]); // Intentionally omitting handleWalletLoad and walletAddress to prevent loops
 
   // Effect to update total position value whenever positions change
   useEffect(() => {
@@ -907,19 +912,16 @@ const Dashboard: React.FC = () => {
       0
     );
     
-    // Convert to string for comparison
-    const totalPositionValueStr = totalPositionValue.toString();
-    
-    // Only update if the value has actually changed to prevent infinite loops
-    if (userState.crossMarginSummary.totalPositionValue !== totalPositionValueStr) {
-      // Use functional update to avoid dependency on userState
+    // Only update if different to prevent render loops
+    if (userState.crossMarginSummary.totalPositionValue !== totalPositionValue.toString()) {
+      // Update the userState with the new total position value
       setUserState(prevState => {
         if (prevState && prevState.crossMarginSummary) {
           return {
             ...prevState,
             crossMarginSummary: {
               ...prevState.crossMarginSummary,
-              totalPositionValue: totalPositionValueStr
+              totalPositionValue: totalPositionValue.toString()
             }
           };
         }
@@ -928,41 +930,45 @@ const Dashboard: React.FC = () => {
     }
   }, [positions, userState]); // Added userState to dependency array
 
-  // Setup auto-refresh interval
+  // Debug effect to log when positions change
   useEffect(() => {
-    // Clear any existing interval
-    if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
-      refreshIntervalRef.current = null;
-      console.log('Cleared existing auto-refresh interval');
-    }
+    console.log('Positions changed:', positions.length, 'positions available');
+  }, [positions]);
 
-    // Only set up interval if auto-refresh is enabled and we have a wallet address
-    if (autoRefreshEnabled && walletAddress && hasSubmitted && userState) {
+  // Effect for auto-refresh
+  useEffect(() => {
+    // Only set up auto-refresh if enabled and we have a wallet address and have submitted the form
+    if (autoRefreshEnabled && walletAddress && hasSubmitted) {
       console.log('Setting up auto-refresh interval');
-      refreshIntervalRef.current = setInterval(() => {
-        console.log(`Auto-refreshing data for wallet ${walletAddress} at ${new Date().toLocaleTimeString()}`);
-        handleWalletLoad(walletAddress, true);
-        setLastRefreshTime(new Date());
-      }, 60000); // 60 seconds interval
-    } else {
-      console.log('Auto-refresh conditions not met:', {
-        autoRefreshEnabled,
-        hasWalletAddress: !!walletAddress,
-        hasSubmitted,
-        hasUserState: !!userState
-      });
-    }
-
-    // Cleanup function
-    return () => {
+      
+      // Clear any existing interval
       if (refreshIntervalRef.current) {
         clearInterval(refreshIntervalRef.current);
-        refreshIntervalRef.current = null;
-        console.log('Cleaned up auto-refresh interval on unmount');
       }
+      
+      // Set up new interval - refresh every 60 seconds
+      refreshIntervalRef.current = setInterval(() => {
+        console.log('Auto-refreshing data...');
+        handleWalletLoad(walletAddress, true);
+      }, 60000);
+      
+      // Return cleanup function
+      return () => {
+        console.log('Cleaning up auto-refresh interval');
+        if (refreshIntervalRef.current) {
+          clearInterval(refreshIntervalRef.current);
+          refreshIntervalRef.current = null;
+        }
+        console.log('Cleaned up auto-refresh interval on unmount');
+      };
+    }
+    
+    // Add return for the case when auto-refresh is not enabled
+    return () => {
+      // No cleanup needed if auto-refresh was not enabled
     };
-  }, [autoRefreshEnabled, walletAddress, hasSubmitted, userState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRefreshEnabled, walletAddress, hasSubmitted, userState]); // Intentionally omitting handleWalletLoad to prevent loops
 
   // Separate function to load wallet data
   const handleWalletLoad = async (address: string, isAutoRefresh = false) => {
@@ -971,24 +977,22 @@ const Dashboard: React.FC = () => {
       return;
     }
     
-    if (!isAutoRefresh) {
+    // Only set these states if not already set by handleSubmit
+    if (!isLoading && !isAutoRefresh) {
       setIsLoading(true);
       setLoadingPhase('initial');
       setAnimationComplete(false);
+      setError(null);
+      setHasSubmitted(true);
     }
-    setError(null);
-    setHasSubmitted(true);
     
     try {
-      // Simulate loading phases for better user experience
-      if (!isAutoRefresh) {
-        // Start with initial loading
-        setLoadingPhase('initial');
-        
+      // Start with positions loading phase if not auto-refreshing
+      if (!isAutoRefresh && loadingPhase === 'initial') {
         // After a short delay, move to positions loading
         setTimeout(() => {
           setLoadingPhase('positions');
-        }, 1000);
+        }, 800);
       }
       
       // Fetch real data from HyperLiquid API
@@ -1306,6 +1310,7 @@ const Dashboard: React.FC = () => {
         });
         
         // Set the positions state
+        console.log('Setting positions state with:', positionsWithOverrides.length, 'positions');
         setPositions(positionsWithOverrides);
         
         // Calculate total unrealized PNL
@@ -1388,28 +1393,42 @@ const Dashboard: React.FC = () => {
         // After positions are processed, move to metrics loading phase
         if (!isAutoRefresh) {
           setLoadingPhase('metrics');
-        }
-        
-        // After all data is processed, set loading phase to complete
-        if (!isAutoRefresh) {
+          
+          // After all data is processed, set loading phase to complete
           setTimeout(() => {
             setLoadingPhase('complete');
+            
             // Add a small delay before allowing animations to complete
             setTimeout(() => {
               setAnimationComplete(true);
+              setIsLoading(false); // Ensure loading state is set to false
+              
+              // Force a re-render to ensure positions are displayed
+              console.log('Forcing re-render to display positions');
+              setPositions(prevPositions => [...prevPositions]);
             }, 500);
-          }, 1000);
+          }, 800);
+        } else {
+          // For auto-refresh, ensure positions are displayed without animation delays
+          console.log('Auto-refresh complete with', positionsWithOverrides.length, 'positions');
         }
       } else {
         console.warn('No API data found in response');
+        if (!isAutoRefresh) {
+          setIsLoading(false);
+          setLoadingPhase('idle');
+        }
       }
     } catch (err: any) {
       console.error('Error fetching data:', err);
       setError(err.message || 'An error occurred while fetching data from HyperLiquid API');
       setLoadingPhase('idle');
+      setIsLoading(false);
     } finally {
       if (!isAutoRefresh) {
-        setIsLoading(false);
+        // We'll set isLoading to false in the animation completion callback instead
+        // to ensure the animation completes before the loading state changes
+        // setIsLoading(false);
       }
     }
   };
@@ -1422,11 +1441,203 @@ const Dashboard: React.FC = () => {
       return;
     }
 
-    // Update the URL with the wallet address
-    navigate(`/${walletAddress}`);
+    // Clear any previous errors
+    setError(null);
     
-    // Load the wallet data
-    await handleWalletLoad(walletAddress);
+    // Set loading state immediately
+    setIsLoading(true);
+    setLoadingPhase('initial');
+    setHasSubmitted(true);
+    
+    // Force the loading animation to render before navigation
+    // This is a key fix - it ensures the loading state is visible before any navigation happens
+    await new Promise(resolve => setTimeout(resolve, 10));
+    
+    try {
+      // Update the URL with the wallet address
+      navigate(`/${walletAddress}`);
+      
+      // Directly fetch data instead of calling handleWalletLoad to avoid state conflicts
+      const response = await axios.post('https://api.hyperliquid.xyz/info', {
+        type: 'clearinghouseState',
+        user: walletAddress
+      });
+      
+      // Process the response
+      const apiData = response.data as any;
+      
+      if (apiData) {
+        // Store the user state
+        setUserState(apiData as HyperLiquidUserState);
+        
+        // Process positions from HyperLiquid data
+        // This is similar to handleWalletLoad but simplified for the submit action
+        const walletId = uuidv4();
+        const currentPositions: Position[] = [];
+        
+        // Get current market prices
+        const marketResponse = await axios.post('https://api.hyperliquid.xyz/info', {
+          type: 'allMids'
+        });
+        
+        // Create a simple map of asset to price
+        const marketPrices: Record<string, string> = {};
+        
+        try {
+          const marketData = marketResponse.data as any;
+          
+          for (const key in marketData) {
+            if (typeof marketData[key] === 'string' && !key.startsWith('@')) {
+              marketPrices[key] = marketData[key];
+            }
+          }
+        } catch (err) {
+          console.error('Error processing market data:', err);
+        }
+        
+        try {
+          // Extract positions from the API response
+          if (apiData.assetPositions && Array.isArray(apiData.assetPositions)) {
+            console.log('Found assetPositions array with length:', apiData.assetPositions.length);
+            
+            apiData.assetPositions.forEach((assetPosition: any) => {
+              let asset = '';
+              let size = '';
+              let entryPrice = '';
+              let unrealizedPnl = '';
+              let positionObj: any = null;
+              
+              if (assetPosition.type === 'oneWay' && assetPosition.position) {
+                positionObj = assetPosition.position;
+                asset = positionObj.coin || '';
+                size = positionObj.szi || positionObj.size || '0';
+                entryPrice = positionObj.entryPx || positionObj.entryPrice || '0';
+                unrealizedPnl = positionObj.unrealizedPnl || '0';
+                
+                let marginType: 'cross' | 'isolated' = 'cross';
+                if (positionObj.crossed === false) {
+                  marginType = 'isolated';
+                } else if (positionObj.leverage && parseFloat(positionObj.leverage) > 0) {
+                  marginType = 'isolated';
+                }
+                
+                if (asset && size && parseFloat(size) !== 0) {
+                  let currentPrice = marketPrices[asset];
+                  if (!currentPrice) {
+                    const entryPriceNum = parseFloat(entryPrice);
+                    const adjustment = entryPriceNum * 0.01 * (Math.random() > 0.5 ? 1 : -1);
+                    currentPrice = (entryPriceNum + adjustment).toString();
+                  }
+                  
+                  const side = parseFloat(size) > 0 ? 'long' : 'short';
+                  
+                  currentPositions.push({
+                    id: uuidv4(),
+                    walletId,
+                    asset,
+                    entryPrice,
+                    currentPrice,
+                    quantity: Math.abs(parseFloat(size)).toString(),
+                    side,
+                    status: 'open',
+                    marginType,
+                    openedAt: new Date(),
+                    unrealizedPnl,
+                    realizedPnl: '0',
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                  });
+                }
+              }
+            });
+          } else {
+            console.log('No assetPositions array found in API response');
+          }
+        } catch (err) {
+          console.error('Error processing positions:', err);
+        }
+        
+        console.log('Final positions to display:', currentPositions.length);
+        
+        // Set the positions state
+        setPositions(currentPositions);
+        
+        // Calculate total unrealized PNL
+        const totalUnrealizedPnl = currentPositions.reduce(
+          (sum, position) => sum + parseFloat(position.unrealizedPnl || '0'), 
+          0
+        );
+        
+        setUnrealizedPnl(totalUnrealizedPnl.toFixed(2));
+        setRealizedPnl('0');
+        setTotalPnl(totalUnrealizedPnl.toFixed(2));
+        
+        // Generate risk metrics based on the positions
+        if (currentPositions.length > 0) {
+          // Calculate total position value
+          const totalPositionValue = currentPositions.reduce(
+            (sum, position) => sum + parseFloat(position.quantity) * parseFloat(position.currentPrice),
+            0
+          );
+          
+          // Store the total position value in the userState object
+          if (apiData.crossMarginSummary) {
+            apiData.crossMarginSummary.totalPositionValue = totalPositionValue.toString();
+          }
+          
+          // Calculate concentration
+          const positionValues = currentPositions.map(
+            position => parseFloat(position.quantity) * parseFloat(position.currentPrice)
+          );
+          const largestPosition = Math.max(...positionValues);
+          const concentration = (largestPosition / totalPositionValue * 100).toFixed(2);
+          
+          // Calculate Value at Risk
+          const valueAtRisk = (totalPositionValue * 0.05).toFixed(2);
+          
+          // Generate risk metrics
+          const calculatedRiskMetrics: RiskMetrics = {
+            id: uuidv4(),
+            walletId,
+            volatility: (Math.random() * 10 + 10).toFixed(2),
+            drawdown: (Math.random() * 15).toFixed(2),
+            valueAtRisk,
+            sharpeRatio: (Math.random() + 1).toFixed(2),
+            sortinoRatio: (Math.random() + 1.5).toFixed(2),
+            concentration,
+            timestamp: new Date(),
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          
+          setRiskMetrics(calculatedRiskMetrics);
+        } else {
+          setRiskMetrics(null);
+        }
+        
+        // After all data is processed, set loading phase to complete
+        setLoadingPhase('complete');
+        
+        // Add a small delay before allowing animations to complete
+        setTimeout(() => {
+          setAnimationComplete(true);
+          setIsLoading(false);
+          
+          // Force a re-render to ensure positions are displayed
+          console.log('Forcing re-render after form submission');
+          setPositions(prevPositions => [...prevPositions]);
+        }, 1000);
+      } else {
+        setError('No data found for this wallet address');
+        setIsLoading(false);
+        setLoadingPhase('idle');
+      }
+    } catch (err: any) {
+      console.error('Error fetching data:', err);
+      setError(err.message || 'An error occurred while fetching data');
+      setIsLoading(false);
+      setLoadingPhase('idle');
+    }
   };
 
   // Toggle auto-refresh with animation
@@ -1751,13 +1962,14 @@ const Dashboard: React.FC = () => {
         </FormCard>
 
         {/* Loading Animation */}
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {isLoading && (
             <motion.div
+              key="loading-animation"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }} // Faster transition
               className="max-w-2xl mx-auto"
             >
               <LoadingAnimation 
@@ -1772,10 +1984,11 @@ const Dashboard: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Feature Overview Grid - Only show when not submitted */}
-        <AnimatePresence>
-          {!hasSubmitted && (
+        {/* Feature Overview Grid - Only show when not submitted and not loading */}
+        <AnimatePresence mode="wait">
+          {!hasSubmitted && !isLoading && (
             <motion.div 
+              key="feature-overview"
               className="max-w-7xl mx-auto space-y-12"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1903,14 +2116,14 @@ const Dashboard: React.FC = () => {
           </div>
         )}
         
-        {/* Current Positions */}
-        {hasSubmitted && !isLoading && positions.length > 0 && (
-          <AnimatedContent animation="slide" delay={0.1} className="mt-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Positions Table */}
+        {hasSubmitted && !error && positions.length > 0 && (
+          <AnimatedContent animation="slide" delay={0.1}>
             <TableCard title="Current Positions">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-750">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
                       <th className="group px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('asset')}>
                         <div className="flex items-center">
                           <span>Asset</span>
@@ -1923,18 +2136,13 @@ const Dashboard: React.FC = () => {
                           <div className="ml-1">{renderSortIndicator('side')}</div>
                         </div>
                       </th>
-                      <th className="group px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      <th className="group px-6 py-3.5 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('marginType')}>
                         <div className="flex items-center">
                           <span>Margin Type</span>
+                          <div className="ml-1">{renderSortIndicator('marginType')}</div>
                         </div>
                       </th>
                       <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('quantity')}>
-                        <div className="flex items-center justify-end">
-                          <span>Quantity</span>
-                          <div className="ml-1">{renderSortIndicator('quantity')}</div>
-                        </div>
-                      </th>
-                      <th className="group px-6 py-3.5 text-right text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:text-purple-600 dark:hover:text-purple-400" onClick={() => sortPositions('positionSize')}>
                         <div className="flex items-center justify-end">
                           <span>Position Size</span>
                           <div className="ml-1">{renderSortIndicator('positionSize')}</div>
